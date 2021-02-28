@@ -56,7 +56,7 @@ public class PlayerBoardView {
     }
 
     /**
-     * Gets a map from every Point with an item on the ground to the InventoryItem on theground
+     * Gets a map from every Point with an item on the ground to the InventoryItem on the ground
      *
      * @return The mapping for all locations with InventoryItems to those items
      */
