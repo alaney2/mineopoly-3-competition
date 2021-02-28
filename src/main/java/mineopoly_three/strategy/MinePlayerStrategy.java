@@ -19,7 +19,7 @@ public interface MinePlayerStrategy {
      * @param startingBoard A view of the GameBoard at the start of the game. You can use this to pre-compute fixed
      *                       information, like the locations of market or recharge tiles
      * @param startTileLocation A Point representing your starting location in (x, y) coordinates
- *                              (0, 0) is the bottom left and (boardSize - 1, boardSize - 1) is the top right
+     *                              (0, 0) is the bottom left and (boardSize - 1, boardSize - 1) is the top right
      * @param isRedPlayer True if this strategy is the red player, false otherwise
      * @param random A random number generator, if your strategy needs random numbers you should use this.
      */

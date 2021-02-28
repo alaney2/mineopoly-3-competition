@@ -16,7 +16,7 @@ import java.util.Random;
 @SuppressWarnings("unused")
 public class GameEngine extends Observable {
     private static final int MAX_TURNS_PER_GAME = 1000;
-    private static final double TURNS_PER_SECOND = 20;
+    private static final double TURNS_PER_SECOND = 1;
 
     private long randomSeed;
     private GameBoard board;
