@@ -8,22 +8,31 @@ import mineopoly_three.tiles.TileType;
 import mineopoly_three.util.DistanceUtil;
 
 import java.awt.*;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 // Diamond hands
 public class CustomStrategy implements MinePlayerStrategy {
-    int boardSize;
-    int winningScore;
-    boolean isRedPlayer;
-    int itemCount = 0;
-    int score;
+    private int boardSize;
+    private int maxInventorySize;
+    private int maxCharge;
+    private int winningScore;
+    private boolean isRedPlayer;
+    private PlayerBoardView startingBoard;
+    private Point currentLocation;
 
-    PlayerBoardView startingBoard;
-    Point currentLocation;
+    private int itemCount = 0;
+    private int score;
+    private List<TurnAction> commandStack = new ArrayList<>();
+
 
     @Override
     public void initialize(int boardSize, int maxInventorySize, int maxCharge, int winningScore, PlayerBoardView startingBoard, Point startTileLocation, boolean isRedPlayer, Random random) {
         this.boardSize = boardSize;
+        this.maxInventorySize = maxInventorySize;
+        this.maxCharge = maxCharge;
         this.winningScore = winningScore;
         this.startingBoard = startingBoard;
         this.isRedPlayer = isRedPlayer;
@@ -32,17 +41,35 @@ public class CustomStrategy implements MinePlayerStrategy {
 
     @Override
     public TurnAction getTurnAction(PlayerBoardView boardView, Economy economy, int currentCharge, boolean isRedTurn) {
-        currentLocation = boardView.getYourLocation();
-        Point rubyPoint = getNearestTile(TileType.RESOURCE_RUBY);
-        while (!currentLocation.equals(rubyPoint)) {
+        while (score < winningScore) {
+            currentLocation = boardView.getYourLocation();
 
-            return moveTowardsTile(rubyPoint);
-        }
+            if (!commandStack.isEmpty()) {
 
-        if (boardView.getTileTypeAtLocation(currentLocation).equals(TileType.RESOURCE_RUBY)) {
-            return TurnAction.MINE;
+                return commandStack.remove(commandStack.size() - 1);
+            }
+
+            if (currentLocation.equals(TileType.RED_MARKET)) {
+                itemCount = 0;
+            }
+
+            if (itemCount == maxInventorySize) {
+
+                return moveTowardsTile(getNearestTile(TileType.RED_MARKET));
+            }
+
+            Point rubyPoint = getNearestTile(TileType.RESOURCE_RUBY);
+            if (!currentLocation.equals(rubyPoint)) {
+
+                return moveTowardsTile(rubyPoint);
+            }
+
+            if (boardView.getTileTypeAtLocation(currentLocation).equals(TileType.RESOURCE_RUBY)) {
+                commandStack.add(TurnAction.PICK_UP_RESOURCE);
+                commandStack.add(TurnAction.MINE);
+            }
         }
-        return TurnAction.PICK_UP_RESOURCE;
+        return null;
     }
 
     @Override
@@ -57,7 +84,7 @@ public class CustomStrategy implements MinePlayerStrategy {
 
     @Override
     public String getName() {
-        return "Fuck";
+        return "FUCK";
     }
 
     @Override
