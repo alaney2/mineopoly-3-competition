@@ -19,7 +19,6 @@ public class CustomStrategy implements MinePlayerStrategy {
     int score;
 
     PlayerBoardView startingBoard;
-    Point startTileLocation;
     Point currentLocation;
 
     @Override
@@ -27,19 +26,22 @@ public class CustomStrategy implements MinePlayerStrategy {
         this.boardSize = boardSize;
         this.winningScore = winningScore;
         this.startingBoard = startingBoard;
-        this.startTileLocation = startTileLocation;
         this.isRedPlayer = isRedPlayer;
-        this.currentLocation = startingBoard.getYourLocation();
+        this.currentLocation = startTileLocation;
     }
 
     @Override
     public TurnAction getTurnAction(PlayerBoardView boardView, Economy economy, int currentCharge, boolean isRedTurn) {
+        currentLocation = boardView.getYourLocation();
         Point rubyPoint = getNearestTile(TileType.RESOURCE_RUBY);
         while (!currentLocation.equals(rubyPoint)) {
 
             return moveTowardsTile(rubyPoint);
         }
 
+        if (boardView.getTileTypeAtLocation(currentLocation).equals(TileType.RESOURCE_RUBY)) {
+            return TurnAction.MINE;
+        }
         return TurnAction.PICK_UP_RESOURCE;
     }
 
@@ -65,13 +67,19 @@ public class CustomStrategy implements MinePlayerStrategy {
 
     public TurnAction moveTowardsTile(Point point) {
         if (currentLocation.x < point.x) {
+            currentLocation.x += 1;
             return TurnAction.MOVE_RIGHT;
         } else if (currentLocation.y < point.y) {
+            currentLocation.y += 1;
             return TurnAction.MOVE_UP;
         } else if (currentLocation.x > point.x) {
+            currentLocation.x -= 1;
             return TurnAction.MOVE_LEFT;
-        } else {
+        } else if (currentLocation.y > point.y){
+            currentLocation.y -= 1;
             return TurnAction.MOVE_DOWN;
+        } else {
+            return null;
         }
     }
 
@@ -79,7 +87,7 @@ public class CustomStrategy implements MinePlayerStrategy {
         Point nearestTile = getFirstInstanceOfTile(tile);
         for (int row = 0; row < boardSize; row++) {
             for (int col = 0; col < boardSize; col++) {
-                if (startingBoard.getTileTypeAtLocation(row, col).equals(tile)
+                if (startingBoard.getTileTypeAtLocation(col, row).equals(tile)
                         && compareManhattanDistance(currentLocation, nearestTile, new Point(col, row)) > 0) {
                     nearestTile.x = col;
                     nearestTile.y = row;
