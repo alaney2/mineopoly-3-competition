@@ -4,15 +4,12 @@ import mineopoly_three.action.TurnAction;
 import mineopoly_three.game.Economy;
 import mineopoly_three.item.InventoryItem;
 import mineopoly_three.item.ItemType;
-import mineopoly_three.strategy.Helper;
 import mineopoly_three.strategy.MinePlayerStrategy;
 import mineopoly_three.strategy.PlayerBoardView;
 import mineopoly_three.tiles.Tile;
 import mineopoly_three.tiles.TileType;
-import mineopoly_three.util.DistanceUtil;
 
 import java.awt.*;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.List;
 
@@ -24,6 +21,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
     public static int winningScore;
     private boolean isRedPlayer;
     private Point currentLocation;
+    private Point otherPlayerLocation;
     private PlayerBoardView currentBoard;
     private Economy economy;
     private int currentCharge;
@@ -61,11 +59,12 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         this.currentCharge = currentCharge;
         this.isRedTurn = isRedTurn;
         this.currentLocation = boardView.getYourLocation();
+        this.otherPlayerLocation = boardView.getOtherPlayerLocation();
         this.itemsOnGround = currentBoard.getItemsOnGround();
 
-        TileType currentResource = Helper.determineMostExpensiveResource(economy);
-        if (!Helper.playerHasEnoughCharge(currentCharge, currentLocation, getNearestTile(TileType.RECHARGE))) {
-            return Helper.moveTowardsTile(currentLocation, getNearestTile(TileType.RECHARGE));
+        TileType currentResource = Utility.determineMostExpensiveResource(economy);
+        if (!Utility.playerHasEnoughCharge(currentCharge, currentLocation, getNearestTile(TileType.RECHARGE))) {
+            return Utility.moveTowardsTile(currentLocation, getNearestTile(TileType.RECHARGE));
         }
 
         if (currentLocation.equals(getNearestTile(TileType.RECHARGE)) && currentCharge < maxCharge) {
@@ -81,7 +80,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         }
 
         if (inventory.size() == maxInventorySize) {
-            return Helper.moveTowardsTile(currentLocation, getNearestTile(TileType.RED_MARKET));
+            return Utility.moveTowardsTile(currentLocation, getNearestTile(TileType.RED_MARKET));
         }
 
         Point nearestResource = getNearestTile(currentResource);
@@ -89,36 +88,49 @@ public class CompetitionStrategy implements MinePlayerStrategy {
 
         if (nearestGem != null && nearestResource != null &&
                 !currentLocation.equals(nearestGem) && !currentLocation.equals(nearestResource)) {
-
-            if (Helper.compareManhattanDistance(currentLocation, nearestGem, nearestResource) > 0) {
-                return Helper.moveTowardsTile(currentLocation, nearestResource);
+            TurnAction nextAction;
+            if (Utility.compareManhattanDistance(currentLocation, nearestGem, nearestResource) > 0) {
+                nextAction = Utility.moveTowardsTile(currentLocation, nearestResource);
+                if (!Utility.isOtherPlayerInWay(nextAction, currentLocation, otherPlayerLocation)) {
+                    return nextAction;
+                }
             }
-            return Helper.moveTowardsTile(currentLocation, nearestGem);
+            nextAction = Utility.moveTowardsTile(currentLocation, nearestGem);
+            if (!Utility.isOtherPlayerInWay(nextAction, currentLocation, otherPlayerLocation)) {
+                return nextAction;
+            }
         }
 
         if (nearestGem != null && !currentLocation.equals(nearestGem)) {
-            return Helper.moveTowardsTile(currentLocation, nearestGem);
+            TurnAction nextAction = Utility.moveTowardsTile(currentLocation, nearestGem);
+            if (!Utility.isOtherPlayerInWay(nextAction, currentLocation, otherPlayerLocation)) {
+                return nextAction;
+            } else {
+                return Utility.moveTowardsTile(currentLocation, getNearestTile(TileType.RECHARGE));
+            }
         }
 
         if (nearestResource != null && !currentLocation.equals(nearestResource)) {
-
-            return Helper.moveTowardsTile(currentLocation, nearestResource);
+            TurnAction nextAction = Utility.moveTowardsTile(currentLocation, nearestResource);
+            if (!Utility.isOtherPlayerInWay(nextAction, currentLocation, otherPlayerLocation)) {
+                return nextAction;
+            } else {
+                return Utility.moveTowardsTile(currentLocation, getNearestTile(TileType.RECHARGE));
+            }
         }
 
         if (currentLocation.equals(nearestGem)) {
-
             return TurnAction.PICK_UP_RESOURCE;
         }
 
         if (currentLocation.equals(nearestResource)) {
-
             commandStack.add(TurnAction.PICK_UP_RESOURCE);
             for (int move = 0; move < movesToMineResource.get(currentResource); move++) {
                 commandStack.add(TurnAction.MINE);
             }
         }
 
-        return null;
+        return getTurnAction(boardView, economy, currentCharge, !isRedTurn);
     }
 
     @Override
@@ -148,7 +160,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         for (int row = 0; row < boardSize; row++) {
             for (int col = 0; col < boardSize; col++) {
                 if (currentBoard.getTileTypeAtLocation(col, row).equals(tile)
-                        && Helper.compareManhattanDistance(currentLocation, nearestTile, new Point(col, row)) > 0) {
+                        && Utility.compareManhattanDistance(currentLocation, nearestTile, new Point(col, row)) > 0) {
                     nearestTile = new Point(col, row);
                 }
             }
@@ -164,7 +176,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         }
         for (Point point: itemsOnGround.keySet()) {
             if (itemsOnGround.get(point).contains(item)
-                    && Helper.compareManhattanDistance(currentLocation, nearestItem, point) > 0) {
+                    && Utility.compareManhattanDistance(currentLocation, nearestItem, point) > 0) {
                 nearestItem = point;
             }
         }
@@ -179,7 +191,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         }
         for (Point point: itemsOnGround.keySet()) {
             for (InventoryItem item: itemsOnGround.get(point)) {
-                if (typesOfGems.contains(item.getItemType()) && Helper.compareManhattanDistance(currentLocation, nearestGem, point) > 0) {
+                if (typesOfGems.contains(item.getItemType()) && Utility.compareManhattanDistance(currentLocation, nearestGem, point) > 0) {
                     nearestGem = point;
                 }
             }

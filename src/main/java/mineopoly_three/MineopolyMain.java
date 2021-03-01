@@ -1,5 +1,6 @@
 package mineopoly_three;
 
+import mineopoly_three.competition.CompetitionStrategy;
 import mineopoly_three.game.GameEngine;
 import mineopoly_three.graphics.UserInterface;
 import mineopoly_three.replay.Replay;
@@ -20,7 +21,7 @@ public class MineopolyMain {
 
     public static void main(String[] args) {
         if (TEST_STRATEGY_WIN_PERCENT) {
-            MinePlayerStrategy yourStrategy = new CustomStrategy();
+            MinePlayerStrategy yourStrategy = new CompetitionStrategy();
             int[] assignmentBoardSizes = new int[]{14, 20, 26, 32};
 
             for (int testBoardSize : assignmentBoardSizes) {
@@ -37,7 +38,7 @@ public class MineopolyMain {
         final GameEngine gameEngine;
         if (savedReplayFilePath == null) {
             // Not viewing a replay, play a game with a GUI instead
-            MinePlayerStrategy redStrategy = new CustomStrategy();
+            MinePlayerStrategy redStrategy = new CompetitionStrategy();
             MinePlayerStrategy blueStrategy = new RandomStrategy();
             long randomSeed = System.currentTimeMillis();
             gameEngine = new GameEngine(DEFAULT_BOARD_SIZE, redStrategy, blueStrategy, randomSeed);

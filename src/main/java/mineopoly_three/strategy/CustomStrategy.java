@@ -57,9 +57,9 @@ public class CustomStrategy implements MinePlayerStrategy {
         this.currentLocation = boardView.getYourLocation();
         this.itemsOnGround = currentBoard.getItemsOnGround();
 
-        TileType currentResource = Helper.determineMostExpensiveResource(economy);
-        if (!Helper.playerHasEnoughCharge(currentCharge, currentLocation, getNearestTile(TileType.RECHARGE))) {
-            return Helper.moveTowardsTile(currentLocation, getNearestTile(TileType.RECHARGE));
+        TileType currentResource = Utility.determineMostExpensiveResource(economy);
+        if (!Utility.playerHasEnoughCharge(currentCharge, currentLocation, getNearestTile(TileType.RECHARGE))) {
+            return Utility.moveTowardsTile(currentLocation, getNearestTile(TileType.RECHARGE));
         }
 
         if (currentLocation.equals(getNearestTile(TileType.RECHARGE)) && currentCharge < maxCharge) {
@@ -75,7 +75,7 @@ public class CustomStrategy implements MinePlayerStrategy {
         }
 
         if (inventory.size() == maxInventorySize) {
-            return Helper.moveTowardsTile(currentLocation, getNearestTile(TileType.RED_MARKET));
+            return Utility.moveTowardsTile(currentLocation, getNearestTile(TileType.RED_MARKET));
         }
 
         Point nearestResource = getNearestTile(currentResource);
@@ -84,19 +84,19 @@ public class CustomStrategy implements MinePlayerStrategy {
         if (nearestGem != null && nearestResource != null &&
                 !currentLocation.equals(nearestGem) && !currentLocation.equals(nearestResource)) {
 
-            if (Helper.compareManhattanDistance(currentLocation, nearestGem, nearestResource) > 0) {
-                return Helper.moveTowardsTile(currentLocation, nearestResource);
+            if (Utility.compareManhattanDistance(currentLocation, nearestGem, nearestResource) > 0) {
+                return Utility.moveTowardsTile(currentLocation, nearestResource);
             }
-            return Helper.moveTowardsTile(currentLocation, nearestGem);
+            return Utility.moveTowardsTile(currentLocation, nearestGem);
         }
 
         if (nearestGem != null && !currentLocation.equals(nearestGem)) {
-            return Helper.moveTowardsTile(currentLocation, nearestGem);
+            return Utility.moveTowardsTile(currentLocation, nearestGem);
         }
 
         if (nearestResource != null && !currentLocation.equals(nearestResource)) {
 
-            return Helper.moveTowardsTile(currentLocation, nearestResource);
+            return Utility.moveTowardsTile(currentLocation, nearestResource);
         }
 
         if (currentLocation.equals(nearestGem)) {
@@ -112,7 +112,7 @@ public class CustomStrategy implements MinePlayerStrategy {
             }
         }
 
-        return null;
+        return getTurnAction(boardView, economy, currentCharge, !isRedTurn);
     }
 
     @Override
@@ -142,7 +142,7 @@ public class CustomStrategy implements MinePlayerStrategy {
         for (int row = 0; row < boardSize; row++) {
             for (int col = 0; col < boardSize; col++) {
                 if (currentBoard.getTileTypeAtLocation(col, row).equals(tile)
-                        && Helper.compareManhattanDistance(currentLocation, nearestTile, new Point(col, row)) > 0) {
+                        && Utility.compareManhattanDistance(currentLocation, nearestTile, new Point(col, row)) > 0) {
                     nearestTile = new Point(col, row);
                 }
             }
@@ -158,7 +158,7 @@ public class CustomStrategy implements MinePlayerStrategy {
         }
         for (Point point: itemsOnGround.keySet()) {
             if (itemsOnGround.get(point).contains(item)
-                    && Helper.compareManhattanDistance(currentLocation, nearestItem, point) > 0) {
+                    && Utility.compareManhattanDistance(currentLocation, nearestItem, point) > 0) {
                 nearestItem = point;
             }
         }
@@ -173,7 +173,7 @@ public class CustomStrategy implements MinePlayerStrategy {
         }
         for (Point point: itemsOnGround.keySet()) {
             for (InventoryItem item: itemsOnGround.get(point)) {
-                if (typesOfGems.contains(item.getItemType()) && Helper.compareManhattanDistance(currentLocation, nearestGem, point) > 0) {
+                if (typesOfGems.contains(item.getItemType()) && Utility.compareManhattanDistance(currentLocation, nearestGem, point) > 0) {
                     nearestGem = point;
                 }
             }

@@ -1,15 +1,15 @@
-package mineopoly_three.strategy;
+package mineopoly_three.competition;
 
 import mineopoly_three.action.TurnAction;
 import mineopoly_three.game.Economy;
-import mineopoly_three.game.MinePlayer;
 import mineopoly_three.item.ItemType;
+import mineopoly_three.strategy.PlayerBoardView;
 import mineopoly_three.tiles.TileType;
 import mineopoly_three.util.DistanceUtil;
 
 import java.awt.*;
 
-public class Helper {
+public class Utility {
     public static TileType determineMostExpensiveResource(Economy economy) {
         ItemType mostExpensiveResource = ItemType.RUBY;
         for (ItemType item: economy.getCurrentPrices().keySet()) {
@@ -72,5 +72,32 @@ public class Helper {
 
     public static int compareManhattanDistance(Point start, Point p1, Point p2) {
         return DistanceUtil.getManhattanDistance(start, p1) - DistanceUtil.getManhattanDistance(start, p2);
+    }
+
+    public static boolean isOtherPlayerInWay(TurnAction nextAction, Point currentLocation, Point otherPlayerLocation) {
+        switch (nextAction) {
+            case MOVE_UP:
+                if (currentLocation.y == otherPlayerLocation.y - 1 && currentLocation.x == otherPlayerLocation.x) {
+                    return true;
+                }
+
+            case MOVE_DOWN:
+                if (currentLocation.y == otherPlayerLocation.y + 1 && currentLocation.x == otherPlayerLocation.x) {
+                    return true;
+                }
+
+            case MOVE_LEFT:
+                if (currentLocation.x == otherPlayerLocation.x - 1 && currentLocation.y == otherPlayerLocation.y) {
+                    return true;
+                }
+
+            case MOVE_RIGHT:
+                if (currentLocation.x == otherPlayerLocation.x + 1 && currentLocation.y == otherPlayerLocation.y) {
+                    return true;
+                }
+
+            default:
+                return false;
+        }
     }
 }

@@ -1,15 +1,15 @@
-package mineopoly_three.competition;
+package mineopoly_three.strategy;
 
 import mineopoly_three.action.TurnAction;
 import mineopoly_three.game.Economy;
+import mineopoly_three.game.MinePlayer;
 import mineopoly_three.item.ItemType;
-import mineopoly_three.strategy.PlayerBoardView;
 import mineopoly_three.tiles.TileType;
 import mineopoly_three.util.DistanceUtil;
 
 import java.awt.*;
 
-public class Helper {
+public class Utility {
     public static TileType determineMostExpensiveResource(Economy economy) {
         ItemType mostExpensiveResource = ItemType.RUBY;
         for (ItemType item: economy.getCurrentPrices().keySet()) {
