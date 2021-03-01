@@ -17,19 +17,15 @@ public class CustomStrategy implements MinePlayerStrategy {
     public static int maxCharge;
     public static int winningScore;
     private boolean isRedPlayer;
-    private PlayerBoardView startingBoard;
     private Point currentLocation;
     private PlayerBoardView currentBoard;
     private Economy economy;
     private int currentCharge;
     private boolean isRedTurn;
 
-    private int itemCount = 0;
-    private int score;
-    private List<TurnAction> commandStack;
-    private List<TileType> resourcePriority;
-    private int resourcePriorityIndex;
-    private Map<TileType, Integer> movesToMineResource;
+    private List<TurnAction> commandStack = new ArrayList<>();
+    private List<InventoryItem> inventory = new ArrayList<>();
+    private Map<TileType, Integer> movesToMineResource = new HashMap<>();
     private int pointsScored;
     private int opponentPointsScored;
     private Map<Point, List<InventoryItem>> itemsOnGround;
@@ -43,12 +39,8 @@ public class CustomStrategy implements MinePlayerStrategy {
         this.maxInventorySize = maxInventorySize;
         this.maxCharge = maxCharge;
         this.winningScore = winningScore;
-        this.startingBoard = startingBoard;
         this.isRedPlayer = isRedPlayer;
-        this.currentLocation = startTileLocation;
 
-        commandStack = new ArrayList<>();
-        movesToMineResource = new HashMap<>();
         movesToMineResource.put(TileType.RESOURCE_RUBY, 1);
         movesToMineResource.put(TileType.RESOURCE_EMERALD, 2);
         movesToMineResource.put(TileType.RESOURCE_DIAMOND, 3);
@@ -79,10 +71,10 @@ public class CustomStrategy implements MinePlayerStrategy {
         }
 
         if (currentLocation.equals(getNearestTile(TileType.RED_MARKET))) {
-            itemCount = 0;
+            inventory.clear();
         }
 
-        if (itemCount == maxInventorySize) {
+        if (inventory.size() == maxInventorySize) {
             return Helper.moveTowardsTile(currentLocation, getNearestTile(TileType.RED_MARKET));
         }
 
@@ -125,13 +117,11 @@ public class CustomStrategy implements MinePlayerStrategy {
 
     @Override
     public void onReceiveItem(InventoryItem itemReceived) {
-        itemCount += 1;
+        inventory.add(itemReceived);
     }
 
     @Override
-    public void onSoldInventory(int totalSellPrice) {
-        score += totalSellPrice;
-    }
+    public void onSoldInventory(int totalSellPrice) { }
 
     @Override
     public String getName() {
@@ -143,7 +133,6 @@ public class CustomStrategy implements MinePlayerStrategy {
         this.pointsScored = pointsScored;
         this.opponentPointsScored = opponentPointsScored;
     }
-
 
     public Point getNearestTile(TileType tile) {
         Point nearestTile = getFirstInstanceOfTile(tile);
