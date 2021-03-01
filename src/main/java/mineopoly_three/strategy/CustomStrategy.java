@@ -70,12 +70,17 @@ public class CustomStrategy implements MinePlayerStrategy {
             return commandStack.remove(commandStack.size() - 1);
         }
 
-        if (currentLocation.equals(getNearestTile(TileType.RED_MARKET))) {
+        if (currentLocation.equals(getNearestTile(TileType.RED_MARKET)) && isRedPlayer) {
+            inventory.clear();
+        } else if (currentLocation.equals(getNearestTile(TileType.BLUE_MARKET)) && !isRedPlayer) {
             inventory.clear();
         }
 
         if (inventory.size() == maxInventorySize) {
-            return Utility.moveTowardsTile(currentLocation, getNearestTile(TileType.RED_MARKET));
+            if (isRedPlayer) {
+                return Utility.moveTowardsTile(currentLocation, getNearestTile(TileType.RED_MARKET));
+            }
+            return Utility.moveTowardsTile(currentLocation, getNearestTile(TileType.BLUE_MARKET));
         }
 
         Point nearestResource = getNearestTile(currentResource);
