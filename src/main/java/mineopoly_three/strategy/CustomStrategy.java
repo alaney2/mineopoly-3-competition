@@ -49,7 +49,7 @@ public class CustomStrategy implements MinePlayerStrategy {
     @Override
     public TurnAction getTurnAction(PlayerBoardView boardView, Economy economy, int currentCharge, boolean isRedTurn) {
         numberOfTurns += 1;
-        //System.out.println(numberOfTurns);
+        System.out.println(numberOfTurns);
         this.currentBoard = boardView;
         this.economy = economy;
         this.currentCharge = currentCharge;
