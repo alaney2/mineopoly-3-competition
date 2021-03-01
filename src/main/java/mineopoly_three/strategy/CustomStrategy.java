@@ -49,7 +49,7 @@ public class CustomStrategy implements MinePlayerStrategy {
     @Override
     public TurnAction getTurnAction(PlayerBoardView boardView, Economy economy, int currentCharge, boolean isRedTurn) {
         numberOfTurns += 1;
-        System.out.println(numberOfTurns);
+//        System.out.println(numberOfTurns);
         this.currentBoard = boardView;
         this.economy = economy;
         this.currentCharge = currentCharge;
@@ -112,7 +112,7 @@ public class CustomStrategy implements MinePlayerStrategy {
             }
         }
 
-        return getTurnAction(boardView, economy, currentCharge, !isRedTurn);
+        return null;
     }
 
     @Override
@@ -133,6 +133,7 @@ public class CustomStrategy implements MinePlayerStrategy {
         this.pointsScored = pointsScored;
         this.opponentPointsScored = opponentPointsScored;
     }
+
 
     public Point getNearestTile(TileType tile) {
         Point nearestTile = getFirstInstanceOfTile(tile);
