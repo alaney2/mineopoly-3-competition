@@ -1,9 +1,11 @@
-package mineopoly_three.strategy;
+package mineopoly_three.competition;
 
 import mineopoly_three.action.TurnAction;
 import mineopoly_three.game.Economy;
 import mineopoly_three.item.InventoryItem;
 import mineopoly_three.item.ItemType;
+import mineopoly_three.strategy.MinePlayerStrategy;
+import mineopoly_three.strategy.PlayerBoardView;
 import mineopoly_three.tiles.Tile;
 import mineopoly_three.tiles.TileType;
 import mineopoly_three.util.DistanceUtil;
@@ -14,7 +16,7 @@ import java.util.*;
 import java.util.List;
 
 // Diamond hands
-public class CustomStrategy implements MinePlayerStrategy {
+public class CompetitionStrategy implements MinePlayerStrategy {
     private int boardSize;
     private int maxInventorySize;
     private int maxCharge;
@@ -35,10 +37,6 @@ public class CustomStrategy implements MinePlayerStrategy {
     private Map<TileType, Integer> movesToMineResource;
     private int pointsScored;
     private int opponentPointsScored;
-    private Map<Point, List<InventoryItem>> itemsOnGround;
-    public Set<ItemType> typesOfGems = new HashSet<>(Arrays.asList(ItemType.RUBY, ItemType.EMERALD, ItemType.DIAMOND));
-    private int numberOfTurns;
-
 
     @Override
     public void initialize(int boardSize, int maxInventorySize, int maxCharge, int winningScore, PlayerBoardView startingBoard, Point startTileLocation, boolean isRedPlayer, Random random) {
@@ -51,6 +49,9 @@ public class CustomStrategy implements MinePlayerStrategy {
         this.currentLocation = startTileLocation;
 
         commandStack = new ArrayList<>();
+//        resourcePriority = new ArrayList<>(Arrays.asList(
+//                TileType.RESOURCE_RUBY, TileType.RESOURCE_EMERALD, TileType.RESOURCE_DIAMOND));
+//        resourcePriorityIndex = 0;
         movesToMineResource = new HashMap<>();
         movesToMineResource.put(TileType.RESOURCE_RUBY, 1);
         movesToMineResource.put(TileType.RESOURCE_EMERALD, 2);
@@ -59,15 +60,24 @@ public class CustomStrategy implements MinePlayerStrategy {
 
     @Override
     public TurnAction getTurnAction(PlayerBoardView boardView, Economy economy, int currentCharge, boolean isRedTurn) {
-        numberOfTurns += 1;
-        System.out.println(numberOfTurns);
         this.currentBoard = boardView;
         this.economy = economy;
         this.currentCharge = currentCharge;
         this.isRedTurn = isRedTurn;
         this.currentLocation = boardView.getYourLocation();
-        this.itemsOnGround = currentBoard.getItemsOnGround();
 
+//        if (resourcePriorityIndex > resourcePriority.size() - 1) {
+//            resourcePriorityIndex = 0;
+//        }
+//
+//        if (!tileExists(resourcePriority.get(resourcePriorityIndex))) {
+//            resourcePriorityIndex += 1;
+//            if (resourcePriorityIndex < 0) {
+//                resourcePriorityIndex = resourcePriority.size() - 1;
+//            }
+//        }
+//
+//        TileType currentResource = resourcePriority.get(resourcePriorityIndex);
         TileType currentResource = getMostExpensiveResource();
         if (!playerHasEnoughCharge()) {
             return moveTowardsTile(getNearestTile(TileType.RECHARGE));
@@ -83,39 +93,19 @@ public class CustomStrategy implements MinePlayerStrategy {
 
         if (currentLocation.equals(getNearestTile(TileType.RED_MARKET))) {
             itemCount = 0;
+            resourcePriorityIndex += 1;
         }
 
         if (itemCount == maxInventorySize) {
             return moveTowardsTile(getNearestTile(TileType.RED_MARKET));
         }
 
-        Point nearestResource = getNearestTile(currentResource);
-        Point nearestGem = getNearestAvailableGem();
-        if (nearestGem != null && nearestResource != null &&
-                !currentLocation.equals(nearestGem) && !currentLocation.equals(nearestResource)) {
-
-            if (compareManhattanDistance(currentLocation, nearestGem, nearestResource) > 0) {
-                return moveTowardsTile(nearestResource);
-            }
-            return moveTowardsTile(nearestGem);
+        Point resourcePoint = getNearestTile(currentResource);
+        if (!currentLocation.equals(resourcePoint)) {
+            return moveTowardsTile(resourcePoint);
         }
 
-        if (nearestGem != null && !currentLocation.equals(nearestGem)) {
-            return moveTowardsTile(nearestGem);
-        }
-
-        if (nearestResource != null && !currentLocation.equals(nearestResource)) {
-
-            return moveTowardsTile(nearestResource);
-        }
-
-        if (currentLocation.equals(nearestGem)) {
-
-            return TurnAction.PICK_UP_RESOURCE;
-        }
-
-        if (currentLocation.equals(nearestResource)) {
-
+        if (boardView.getTileTypeAtLocation(currentLocation).equals(currentResource)) {
             commandStack.add(TurnAction.PICK_UP_RESOURCE);
             for (int move = 0; move < movesToMineResource.get(currentResource); move++) {
                 commandStack.add(TurnAction.MINE);
@@ -190,9 +180,6 @@ public class CustomStrategy implements MinePlayerStrategy {
     }
 
     public TurnAction moveTowardsTile(Point point) {
-        if (point == null) {
-            return null;
-        }
         if (currentLocation.x < point.x) {
             return TurnAction.MOVE_RIGHT;
         } else if (currentLocation.y < point.y) {
@@ -208,50 +195,17 @@ public class CustomStrategy implements MinePlayerStrategy {
 
     public Point getNearestTile(TileType tile) {
         Point nearestTile = getFirstInstanceOfTile(tile);
-        if (nearestTile == null) {
-            return null;
-        }
         for (int row = 0; row < boardSize; row++) {
             for (int col = 0; col < boardSize; col++) {
                 if (currentBoard.getTileTypeAtLocation(col, row).equals(tile)
                         && compareManhattanDistance(currentLocation, nearestTile, new Point(col, row)) > 0) {
-                    nearestTile = new Point(col, row);
+                    nearestTile.x = col;
+                    nearestTile.y = row;
                 }
             }
         }
 
         return nearestTile;
-    }
-
-    public Point getNearestItemOnGround(ItemType item) {
-        Point nearestItem = getFirstInstanceOfItem(item);
-        if (nearestItem == null) {
-            return null;
-        }
-        for (Point point: itemsOnGround.keySet()) {
-            if (itemsOnGround.get(point).contains(item)
-                    && compareManhattanDistance(currentLocation, nearestItem, point) > 0) {
-                nearestItem = point;
-            }
-        }
-
-        return nearestItem;
-    }
-
-    public Point getNearestAvailableGem() {
-        Point nearestGem = getFirstInstanceOfItem(ItemType.RUBY);
-        if (nearestGem == null) {
-            return null;
-        }
-        for (Point point: itemsOnGround.keySet()) {
-            for (InventoryItem item: itemsOnGround.get(point)) {
-                if (typesOfGems.contains(item.getItemType()) && compareManhattanDistance(currentLocation, nearestGem, point) > 0) {
-                    nearestGem = point;
-                }
-            }
-        }
-
-        return nearestGem;
     }
 
     public Point getFirstInstanceOfTile(TileType tile) {
@@ -262,19 +216,7 @@ public class CustomStrategy implements MinePlayerStrategy {
                 }
             }
         }
-
-        return null;
-    }
-
-    public Point getFirstInstanceOfItem(ItemType item) {
-
-        for (Point point: itemsOnGround.keySet()) {
-            if (itemsOnGround.get(point).contains(item)) {
-                return point;
-            }
-        }
-
-        return null;
+        return new Point();
     }
 
     public static int compareManhattanDistance(Point start, Point p1, Point p2) {
