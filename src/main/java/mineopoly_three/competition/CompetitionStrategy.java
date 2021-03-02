@@ -77,7 +77,8 @@ public class CompetitionStrategy implements MinePlayerStrategy {
             return moveToNearestMarketTile();
         }
 
-        if (!Utility.playerHasEnoughCharge(currentCharge, currentLocation, getNearestTile(currentLocation, TileType.RECHARGE))) {
+        if (!Utility.playerHasEnoughCharge(currentCharge, currentLocation,
+                getNearestTile(currentLocation, currentResource), getNearestTile(currentLocation, TileType.RECHARGE))) {
             return Utility.moveTowardsTile(currentLocation, getNearestTile(currentLocation, TileType.RECHARGE));
         }
 
@@ -153,6 +154,16 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         Point rubyPoint = getNearestTile(currentLocation, TileType.RESOURCE_RUBY);
         Point emeraldPoint = getNearestTile(currentLocation, TileType.RESOURCE_EMERALD);
         Point diamondPoint = getNearestTile(currentLocation, TileType.RESOURCE_DIAMOND);
+
+        if (rubyPoint == null) {
+            rubyPoint = new Point(Integer.MAX_VALUE/2, Integer.MAX_VALUE/2);
+        }
+        if (emeraldPoint == null) {
+            emeraldPoint = new Point(Integer.MAX_VALUE/2, Integer.MAX_VALUE/2);
+        }
+        if (diamondPoint == null) {
+            diamondPoint = new Point(Integer.MAX_VALUE/2, Integer.MAX_VALUE/2);
+        }
 
         int rubyDistance = DistanceUtil.getManhattanDistance(currentLocation, rubyPoint);
         int emeraldDistance = DistanceUtil.getManhattanDistance(currentLocation, emeraldPoint);

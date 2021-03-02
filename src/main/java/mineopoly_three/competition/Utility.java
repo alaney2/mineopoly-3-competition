@@ -57,9 +57,10 @@ public class Utility {
         return false;
     }
 
-    public static boolean playerHasEnoughCharge(int currentCharge, Point currentLocation, Point chargerLocation) {
+    public static boolean playerHasEnoughCharge(int currentCharge, Point currentLocation, Point destination, Point chargerLocation) {
         int distanceToNearestCharger = DistanceUtil.getManhattanDistance(currentLocation, chargerLocation);
-        if (currentCharge <= distanceToNearestCharger) {
+        int distanceToDestination = DistanceUtil.getManhattanDistance(currentLocation, destination);
+        if (currentCharge <= distanceToNearestCharger + distanceToDestination) {
             return false;
         }
 
