@@ -131,7 +131,7 @@ public class CustomStrategy implements MinePlayerStrategy {
 
     @Override
     public String getName() {
-        return "FUCK";
+        return "CustomStrategy";
     }
 
     @Override
