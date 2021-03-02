@@ -16,7 +16,7 @@ import java.util.Random;
 @SuppressWarnings("unused")
 public class GameEngine extends Observable {
     private static final int MAX_TURNS_PER_GAME = 1000;
-    private static final double TURNS_PER_SECOND = 10;
+    private static final double TURNS_PER_SECOND = 20;
 
     private long randomSeed;
     private GameBoard board;
@@ -51,7 +51,6 @@ public class GameEngine extends Observable {
         this.board = worldGenerator.generateBoard(boardSize);
         this.economy = new Economy(Arrays.stream(ItemType.values()).filter(ItemType::isResource).toArray(ItemType[]::new));
         this.minScoreToWin = 30 * boardSize * boardSize;
-//        this.minScoreToWin = 100000;
 
         this.playerWhoThrewException = null;
         this.exceptionThrown = null;

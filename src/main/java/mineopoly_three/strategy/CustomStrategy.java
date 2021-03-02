@@ -18,16 +18,17 @@ public class CustomStrategy implements MinePlayerStrategy {
     public static int winningScore;
     private boolean isRedPlayer;
     private Point currentLocation;
+    private Point otherPlayerLocation;
     private PlayerBoardView currentBoard;
     private Economy economy;
     private int currentCharge;
     private boolean isRedTurn;
 
-    private List<TurnAction> commandStack = new ArrayList<>();
     private List<InventoryItem> inventory = new ArrayList<>();
     private Map<TileType, Integer> movesToMineResource = new HashMap<>();
     private int pointsScored;
     private int opponentPointsScored;
+    private int currentScore = 0;
     private Map<Point, List<InventoryItem>> itemsOnGround;
     public Set<ItemType> typesOfGems = new HashSet<>(Arrays.asList(ItemType.RUBY, ItemType.EMERALD, ItemType.DIAMOND));
     private int numberOfTurns;
@@ -55,9 +56,21 @@ public class CustomStrategy implements MinePlayerStrategy {
         this.currentCharge = currentCharge;
         this.isRedTurn = isRedTurn;
         this.currentLocation = boardView.getYourLocation();
+        this.otherPlayerLocation = boardView.getOtherPlayerLocation();
         this.itemsOnGround = currentBoard.getItemsOnGround();
 
         TileType currentResource = Utility.determineMostExpensiveResource(economy);
+
+        if (currentLocationHasGem() && inventory.size() < maxInventorySize) {
+            return TurnAction.PICK_UP_RESOURCE;
+        }
+
+        // Not sure why having this code screws up the tests.
+
+//        if (getCurrentInventoryValue() + currentScore >= winningScore) {
+//            return moveToNearestMarketTile();
+//        }
+
         if (!Utility.playerHasEnoughCharge(currentCharge, currentLocation, getNearestTile(TileType.RECHARGE))) {
             return Utility.moveTowardsTile(currentLocation, getNearestTile(TileType.RECHARGE));
         }
@@ -66,55 +79,40 @@ public class CustomStrategy implements MinePlayerStrategy {
             return null;
         }
 
-        if (!commandStack.isEmpty()) {
-            return commandStack.remove(commandStack.size() - 1);
-        }
-
-        if (currentLocation.equals(getNearestTile(TileType.RED_MARKET)) && isRedPlayer) {
-            inventory.clear();
-        } else if (currentLocation.equals(getNearestTile(TileType.BLUE_MARKET)) && !isRedPlayer) {
-            inventory.clear();
-        }
-
         if (inventory.size() == maxInventorySize) {
-            if (isRedPlayer) {
-                return Utility.moveTowardsTile(currentLocation, getNearestTile(TileType.RED_MARKET));
-            }
-            return Utility.moveTowardsTile(currentLocation, getNearestTile(TileType.BLUE_MARKET));
+            return moveToNearestMarketTile();
         }
 
         Point nearestResource = getNearestTile(currentResource);
         Point nearestGem = getNearestAvailableGem();
 
-        if (nearestGem != null && nearestResource != null &&
-                !currentLocation.equals(nearestGem) && !currentLocation.equals(nearestResource)) {
-
-            if (Utility.compareManhattanDistance(currentLocation, nearestGem, nearestResource) > 0) {
-                return Utility.moveTowardsTile(currentLocation, nearestResource);
-            }
-            return Utility.moveTowardsTile(currentLocation, nearestGem);
-        }
-
-        if (nearestGem != null && !currentLocation.equals(nearestGem)) {
-            return Utility.moveTowardsTile(currentLocation, nearestGem);
-        }
-
-        if (nearestResource != null && !currentLocation.equals(nearestResource)) {
-
-            return Utility.moveTowardsTile(currentLocation, nearestResource);
-        }
-
         if (currentLocation.equals(nearestGem)) {
-
             return TurnAction.PICK_UP_RESOURCE;
         }
 
         if (currentLocation.equals(nearestResource)) {
+            return TurnAction.MINE;
+        }
 
-            commandStack.add(TurnAction.PICK_UP_RESOURCE);
-            for (int move = 0; move < movesToMineResource.get(currentResource); move++) {
-                commandStack.add(TurnAction.MINE);
+        if (nearestGem != null && nearestResource != null &&
+                !currentLocation.equals(nearestGem) && !currentLocation.equals(nearestResource)) {
+            TurnAction nextAction;
+            if (Utility.compareManhattanDistance(currentLocation, nearestGem, nearestResource) > 0) {
+                nextAction = Utility.moveTowardsTile(currentLocation, nearestResource);
+                return nextAction;
             }
+            nextAction = Utility.moveTowardsTile(currentLocation, nearestGem);
+            return nextAction;
+        }
+
+        if (nearestGem != null && !currentLocation.equals(nearestGem)) {
+            TurnAction nextAction = Utility.moveTowardsTile(currentLocation, nearestGem);
+            return nextAction;
+        }
+
+        if (nearestResource != null && !currentLocation.equals(nearestResource)) {
+            TurnAction nextAction = Utility.moveTowardsTile(currentLocation, nearestResource);
+            return nextAction;
         }
 
         return null;
@@ -126,7 +124,10 @@ public class CustomStrategy implements MinePlayerStrategy {
     }
 
     @Override
-    public void onSoldInventory(int totalSellPrice) { }
+    public void onSoldInventory(int totalSellPrice) {
+        currentScore += totalSellPrice;
+        inventory.clear();
+    }
 
     @Override
     public String getName() {
@@ -139,6 +140,32 @@ public class CustomStrategy implements MinePlayerStrategy {
         this.opponentPointsScored = opponentPointsScored;
     }
 
+    public TurnAction moveToNearestMarketTile() {
+        if (isRedPlayer) {
+            return Utility.moveTowardsTile(currentLocation, getNearestTile(TileType.RED_MARKET));
+        }
+        return Utility.moveTowardsTile(currentLocation, getNearestTile(TileType.BLUE_MARKET));
+    }
+
+    public int getCurrentInventoryValue() {
+        int value = 0;
+        for (InventoryItem item: inventory) {
+            value += economy.getCurrentPrices().get(item.getItemType());
+        }
+        return value;
+    }
+
+    public boolean currentLocationHasGem() {
+        if (currentBoard.getItemsOnGround().containsKey(currentLocation)) {
+            for (InventoryItem item: currentBoard.getItemsOnGround().get(currentLocation)) {
+                ItemType itemType = item.getItemType();
+                if (itemType.equals(ItemType.RUBY) || itemType.equals(ItemType.EMERALD) || itemType.equals(ItemType.DIAMOND)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     public Point getNearestTile(TileType tile) {
         Point nearestTile = getFirstInstanceOfTile(tile);
