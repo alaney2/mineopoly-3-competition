@@ -1,6 +1,5 @@
 package mineopoly_three;
 
-import mineopoly_three.competition.AutominerStrategy;
 import mineopoly_three.competition.CompetitionStrategy;
 import mineopoly_three.game.GameEngine;
 import mineopoly_three.graphics.UserInterface;
@@ -39,8 +38,8 @@ public class MineopolyMain {
         final GameEngine gameEngine;
         if (savedReplayFilePath == null) {
             // Not viewing a replay, play a game with a GUI instead
-            MinePlayerStrategy redStrategy = new AutominerStrategy();
-            MinePlayerStrategy blueStrategy = new RandomStrategy();
+            MinePlayerStrategy redStrategy = new CompetitionStrategy();
+            MinePlayerStrategy blueStrategy = new UngradedStrategy();
             long randomSeed = System.currentTimeMillis();
             gameEngine = new GameEngine(DEFAULT_BOARD_SIZE, redStrategy, blueStrategy, randomSeed);
             gameEngine.setGuiEnabled(true);

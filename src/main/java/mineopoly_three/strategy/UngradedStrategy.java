@@ -1,6 +1,7 @@
-package mineopoly_three.competition;
+package mineopoly_three.strategy;
 
 import mineopoly_three.action.TurnAction;
+import mineopoly_three.competition.Utility;
 import mineopoly_three.game.Economy;
 import mineopoly_three.item.InventoryItem;
 import mineopoly_three.item.ItemType;
@@ -14,7 +15,7 @@ import java.util.*;
 import java.util.List;
 
 // Diamond hands
-public class AutominerStrategy implements MinePlayerStrategy {
+public class UngradedStrategy implements MinePlayerStrategy {
     public static int boardSize;
     public static int maxInventorySize;
     public static int maxCharge;
@@ -31,14 +32,12 @@ public class AutominerStrategy implements MinePlayerStrategy {
 
     private List<InventoryItem> inventory = new ArrayList<>();
     private Map<TileType, Integer> turnsToMineResource = new HashMap<>();
-    private Map<ItemType, Integer> gemIncreasePerTurn = new HashMap<>();
     private int pointsScored;
     private int opponentPointsScored;
     private int currentScore = 0;
     private Map<Point, List<InventoryItem>> itemsOnGround;
     public Set<ItemType> typesOfGems = new HashSet<>(Arrays.asList(ItemType.RUBY, ItemType.EMERALD, ItemType.DIAMOND));
     private int numberOfTurns;
-    private int autominerCount = 0;
 
     @Override
     public void initialize(int boardSize, int maxInventorySize, int maxCharge, int winningScore, PlayerBoardView startingBoard, Point startTileLocation, boolean isRedPlayer, Random random) {
@@ -53,9 +52,6 @@ public class AutominerStrategy implements MinePlayerStrategy {
         turnsToMineResource.put(TileType.RESOURCE_RUBY, 1);
         turnsToMineResource.put(TileType.RESOURCE_EMERALD, 2);
         turnsToMineResource.put(TileType.RESOURCE_DIAMOND, 3);
-        gemIncreasePerTurn.put(ItemType.RUBY, 3);
-        gemIncreasePerTurn.put(ItemType.EMERALD, 4);
-        gemIncreasePerTurn.put(ItemType.DIAMOND, 5);
     }
 
     @Override
@@ -71,17 +67,10 @@ public class AutominerStrategy implements MinePlayerStrategy {
         this.otherPlayerLocation = boardView.getOtherPlayerLocation();
         this.itemsOnGround = currentBoard.getItemsOnGround();
 
-        if (autominerCount == 0 && otherPlayerHasAutominer()) {
-            Point autominer = Utility.getNearestAutominer(currentLocation, boardView.getItemsOnGround());
-            if (currentLocation.equals(autominer)) {
-                autominerCount += 1;
-                return TurnAction.PICK_UP_AUTOMINER;
-            }
-            if (autominer != null) {
-                return Utility.moveTowardsPoint(currentLocation, autominer);
-            }
-        }
-
+//        TileType currentResource = Utility.determineMostExpensiveResourceNotDiamond(economy);
+//        if (!Utility.tileExists(currentResource, currentBoard, boardSize)) {
+//            currentResource = TileType.RESOURCE_DIAMOND;
+//        }
         TileType currentResource = calculateOptimalResource();
 
         if (currentLocationHasGem() && inventory.size() < maxInventorySize) {
@@ -103,12 +92,12 @@ public class AutominerStrategy implements MinePlayerStrategy {
 
         if (DistanceUtil.getManhattanDistance(currentLocation, getNearestTilePoint(currentLocation, TileType.RECHARGE)) < boardSize / 4
                 && currentCharge < maxCharge/2) {
-            return Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.RECHARGE));
+            return mineopoly_three.competition.Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.RECHARGE));
         }
 
-        if (!Utility.playerHasEnoughCharge(currentCharge, currentLocation,
+        if (!mineopoly_three.competition.Utility.playerHasEnoughCharge(currentCharge, currentLocation,
                 getNearestTilePoint(currentLocation, currentResource), getNearestTilePoint(currentLocation, TileType.RECHARGE))) {
-            return Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.RECHARGE));
+            return mineopoly_three.competition.Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.RECHARGE));
         }
 
         if (currentLocation.equals(getNearestTilePoint(currentLocation, TileType.RECHARGE)) && currentCharge < maxCharge) {
@@ -121,33 +110,35 @@ public class AutominerStrategy implements MinePlayerStrategy {
 
         Point nearestResource = getNearestTilePoint(currentLocation, currentResource);
         Point nearestGem = getNearestAvailableGem();
-//        System.out.println(nearestGem);
 
-        if (nearestResource != null && currentLocation.equals(nearestResource)) {
+//        if (currentLocation.equals(nearestGem)) {
+//            return TurnAction.PICK_UP_RESOURCE;
+//        }
+
+        if (currentLocation.equals(nearestResource)) {
             return TurnAction.MINE;
         }
 
         if (nearestGem != null && nearestResource != null &&
                 !currentLocation.equals(nearestGem) && !currentLocation.equals(nearestResource)) {
-//            TurnAction nextAction;
-//            if (Utility.compareManhattanDistance(currentLocation, nearestGem, nearestResource) > 0) {
-//                nextAction = Utility.moveTowardsPoint(currentLocation, nearestResource);
-//                return nextAction;
-//            }
-//            nextAction = Utility.moveTowardsPoint(currentLocation, nearestGem);
-//
-//            return nextAction;
-            return Utility.moveTowardsPoint(currentLocation, gemVersusResource(nearestGem, nearestResource));
+            TurnAction nextAction;
+            if (mineopoly_three.competition.Utility.compareManhattanDistance(currentLocation, nearestGem, nearestResource) > 0) {
+                nextAction = mineopoly_three.competition.Utility.moveTowardsPoint(currentLocation, nearestResource);
+                return nextAction;
+            }
+            nextAction = mineopoly_three.competition.Utility.moveTowardsPoint(currentLocation, nearestGem);
+
+            return nextAction;
         }
 
         if (nearestGem != null && !currentLocation.equals(nearestGem)) {
-            TurnAction nextAction = Utility.moveTowardsPoint(currentLocation, nearestGem);
+            TurnAction nextAction = mineopoly_three.competition.Utility.moveTowardsPoint(currentLocation, nearestGem);
 
             return nextAction;
         }
 
         if (nearestResource != null && !currentLocation.equals(nearestResource)) {
-            TurnAction nextAction = Utility.moveTowardsPoint(currentLocation, nearestResource);
+            TurnAction nextAction = mineopoly_three.competition.Utility.moveTowardsPoint(currentLocation, nearestResource);
 
             return nextAction;
         }
@@ -173,75 +164,13 @@ public class AutominerStrategy implements MinePlayerStrategy {
 
     @Override
     public String getName() {
-        return "Diamond Hands";
+        return "FUCK";
     }
 
     @Override
     public void endRound(int pointsScored, int opponentPointsScored) {
         this.pointsScored = pointsScored;
         this.opponentPointsScored = opponentPointsScored;
-    }
-
-    public Point gemVersusResource(Point nearestGem, Point nearestResource) {
-        TileType resourceTile = currentBoard.getTileTypeAtLocation(nearestResource);
-        ItemType gemType = null;
-
-        for (InventoryItem item: currentBoard.getItemsOnGround().get(nearestGem)) {
-            if (!item.getItemType().equals(ItemType.AUTOMINER)) {
-                gemType = item.getItemType();
-            }
-        }
-        int gemTurns = DistanceUtil.getManhattanDistance(currentLocation, nearestGem);
-        int resourceTurns = DistanceUtil.getManhattanDistance(currentLocation, nearestResource)
-                + turnsToMineResource.get(resourceTile);
-        int potentialGemValue = economy.getCurrentPrices().get(gemType) + gemTurns * gemIncreasePerTurn.get(gemType);
-        if (gemType.equals(ItemType.RUBY) && potentialGemValue > 400) {
-            potentialGemValue = 400;
-        } else if (gemType.equals(ItemType.EMERALD) && potentialGemValue > 450) {
-            potentialGemValue = 450;
-        } else if (gemType.equals(ItemType.DIAMOND) && potentialGemValue > 500) {
-            potentialGemValue = 500;
-        }
-        int potentialResourceValue = economy.getCurrentPrices().get(Utility.convertTileTypeToItemType(resourceTile))
-                + resourceTurns * gemIncreasePerTurn.get(Utility.convertTileTypeToItemType(resourceTile));
-        if (resourceTile.equals(TileType.RESOURCE_RUBY) && potentialResourceValue > 400) {
-            potentialResourceValue = 400;
-        } else if (resourceTile.equals(TileType.RESOURCE_EMERALD) && potentialResourceValue > 450) {
-            potentialResourceValue = 450;
-        } else if (resourceTile.equals(TileType.RESOURCE_DIAMOND) && potentialResourceValue > 500) {
-            potentialResourceValue = 500;
-        }
-        if ((double) (1.5 * potentialGemValue / gemTurns) > (double) (potentialResourceValue / resourceTurns)) {
-            System.out.println("HERE");
-            return nearestGem;
-        }
-        return nearestResource;
-    }
-
-    public boolean otherPlayerHasAutominer() {
-        int mapAutominerCount = 0;
-        for (Point point: currentBoard.getItemsOnGround().keySet()) {
-            for (InventoryItem item: currentBoard.getItemsOnGround().get(point)) {
-                if (item.getItemType().equals(ItemType.AUTOMINER)) {
-                    mapAutominerCount += 1;
-                }
-            }
-        }
-        if (mapAutominerCount == 2) {
-            return false;
-        }
-
-        int inventoryAutominerCount = 0;
-        for (InventoryItem item: inventory) {
-            if (item.getItemType().equals(ItemType.AUTOMINER)) {
-                inventoryAutominerCount += 1;
-            }
-        }
-        if (inventoryAutominerCount + mapAutominerCount == 2) {
-            return false;
-        }
-
-        return true;
     }
 
     public TurnAction actionIfOtherPlayerInWay() {
@@ -266,47 +195,6 @@ public class AutominerStrategy implements MinePlayerStrategy {
             }
             return TurnAction.MOVE_LEFT;
         }
-    }
-
-    public Point determineAutominerPlacement() {
-        double maxRatio = 0;
-        Point bestPoint = new Point();
-        for (int row = 0; row < boardSize; row++) {
-            for (int col = 0; col < boardSize; col++) {
-                Point tempPoint = new Point(col, row);
-                int distanceThere = DistanceUtil.getManhattanDistance(currentLocation, tempPoint);
-                if ((double) calculateThreeByThreeValue(tempPoint) / distanceThere > maxRatio) {
-                    maxRatio = (double) calculateThreeByThreeValue(tempPoint) / distanceThere;
-                    if (Utility.tileInBoard(new Point(tempPoint.x + 1, tempPoint.y + 1), boardSize)) {
-                        bestPoint = new Point(tempPoint.x + 1, tempPoint.y + 1);
-                    }
-                }
-            }
-        }
-        return bestPoint;
-    }
-
-    public int calculateThreeByThreeValue(Point topLeftCorner) {
-        int value = 0;
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                Point tempPoint = new Point(topLeftCorner.x + col, topLeftCorner.y + row);
-                if (!Utility.tileInBoard(tempPoint, boardSize)) {
-                    continue;
-                }
-                if (currentBoard.getTileTypeAtLocation(tempPoint)
-                        .equals(TileType.RESOURCE_RUBY)) {
-                    value += economy.getCurrentPrices().get(ItemType.RUBY);
-                } else if (currentBoard.getTileTypeAtLocation(tempPoint)
-                        .equals(TileType.RESOURCE_EMERALD)) {
-                    value += economy.getCurrentPrices().get(ItemType.EMERALD);
-                } else if (currentBoard.getTileTypeAtLocation(tempPoint)
-                        .equals(TileType.RESOURCE_DIAMOND)) {
-                    value += economy.getCurrentPrices().get(ItemType.DIAMOND);
-                }
-            }
-        }
-        return value;
     }
 
     public TileType calculateOptimalResource() {
@@ -372,10 +260,10 @@ public class AutominerStrategy implements MinePlayerStrategy {
 
     public TurnAction moveToNearestMarketTile() {
         if (isRedPlayer) {
-            return Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.RED_MARKET));
+            return mineopoly_three.competition.Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.RED_MARKET));
         }
 
-        return Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.BLUE_MARKET));
+        return mineopoly_three.competition.Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.BLUE_MARKET));
     }
 
     public int getCurrentInventoryValue() {
@@ -410,7 +298,7 @@ public class AutominerStrategy implements MinePlayerStrategy {
         for (int row = 0; row < boardSize; row++) {
             for (int col = 0; col < boardSize; col++) {
                 if (currentBoard.getTileTypeAtLocation(col, row).equals(tile)
-                        && Utility.compareManhattanDistance(currentLocation, nearestTile, new Point(col, row)) > 0) {
+                        && mineopoly_three.competition.Utility.compareManhattanDistance(currentLocation, nearestTile, new Point(col, row)) > 0) {
                     nearestTile = new Point(col, row);
                 }
             }
@@ -420,13 +308,13 @@ public class AutominerStrategy implements MinePlayerStrategy {
     }
 
     public Point getNearestItemOnGround(ItemType item) {
-        Point nearestItem = getFirstInstanceOfItem(item);
+        Point nearestItem = mineopoly_three.competition.Utility.getFirstInstanceOfItem(item, currentBoard.getItemsOnGround());
         if (nearestItem == null) {
             return null;
         }
         for (Point point: itemsOnGround.keySet()) {
             if (itemsOnGround.get(point).contains(item)
-                    && Utility.compareManhattanDistance(currentLocation, nearestItem, point) > 0) {
+                    && mineopoly_three.competition.Utility.compareManhattanDistance(currentLocation, nearestItem, point) > 0) {
                 nearestItem = point;
             }
         }
@@ -435,13 +323,7 @@ public class AutominerStrategy implements MinePlayerStrategy {
     }
 
     public Point getNearestAvailableGem() {
-        Point nearestGem = getFirstInstanceOfItem(ItemType.RUBY);
-        if (nearestGem == null) {
-            nearestGem = getFirstInstanceOfItem(ItemType.EMERALD);
-        }
-        if (nearestGem == null) {
-            nearestGem = getFirstInstanceOfItem(ItemType.DIAMOND);
-        }
+        Point nearestGem = mineopoly_three.competition.Utility.getFirstInstanceOfItem(ItemType.RUBY, currentBoard.getItemsOnGround());
         if (nearestGem == null) {
             return null;
         }
@@ -461,18 +343,6 @@ public class AutominerStrategy implements MinePlayerStrategy {
             for (int col = 0; col < boardSize; col++) {
                 if (currentBoard.getTileTypeAtLocation(col, row).equals(tile)) {
                     return new Point(col, row);
-                }
-            }
-        }
-
-        return null;
-    }
-
-    public Point getFirstInstanceOfItem(ItemType item) {
-        for (Point point: itemsOnGround.keySet()) {
-            for (InventoryItem inventoryItem: itemsOnGround.get(point)) {
-                if (inventoryItem.getItemType().equals(item)) {
-                    return point;
                 }
             }
         }
