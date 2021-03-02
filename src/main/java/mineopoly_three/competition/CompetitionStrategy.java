@@ -1,7 +1,6 @@
 package mineopoly_three.competition;
 
 import mineopoly_three.action.TurnAction;
-import mineopoly_three.competition.Utility;
 import mineopoly_three.game.Economy;
 import mineopoly_three.item.InventoryItem;
 import mineopoly_three.item.ItemType;

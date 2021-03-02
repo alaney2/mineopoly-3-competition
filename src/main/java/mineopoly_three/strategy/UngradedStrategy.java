@@ -5,8 +5,6 @@ import mineopoly_three.competition.Utility;
 import mineopoly_three.game.Economy;
 import mineopoly_three.item.InventoryItem;
 import mineopoly_three.item.ItemType;
-import mineopoly_three.strategy.MinePlayerStrategy;
-import mineopoly_three.strategy.PlayerBoardView;
 import mineopoly_three.tiles.TileType;
 import mineopoly_three.util.DistanceUtil;
 
@@ -14,7 +12,6 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
-// Diamond hands
 public class UngradedStrategy implements MinePlayerStrategy {
     public static int boardSize;
     public static int maxInventorySize;
@@ -67,10 +64,6 @@ public class UngradedStrategy implements MinePlayerStrategy {
         this.otherPlayerLocation = boardView.getOtherPlayerLocation();
         this.itemsOnGround = currentBoard.getItemsOnGround();
 
-//        TileType currentResource = Utility.determineMostExpensiveResourceNotDiamond(economy);
-//        if (!Utility.tileExists(currentResource, currentBoard, boardSize)) {
-//            currentResource = TileType.RESOURCE_DIAMOND;
-//        }
         TileType currentResource = calculateOptimalResource();
 
         if (currentLocationHasGem() && inventory.size() < maxInventorySize) {
@@ -110,10 +103,6 @@ public class UngradedStrategy implements MinePlayerStrategy {
 
         Point nearestResource = getNearestTilePoint(currentLocation, currentResource);
         Point nearestGem = getNearestAvailableGem();
-
-//        if (currentLocation.equals(nearestGem)) {
-//            return TurnAction.PICK_UP_RESOURCE;
-//        }
 
         if (currentLocation.equals(nearestResource)) {
             return TurnAction.MINE;
