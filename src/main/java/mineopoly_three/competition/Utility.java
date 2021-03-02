@@ -10,6 +10,19 @@ import mineopoly_three.util.DistanceUtil;
 import java.awt.*;
 
 public class Utility {
+    public static TileType determineMostExpensiveResourceNotDiamond(Economy economy) {
+        ItemType mostExpensiveResource = ItemType.RUBY;
+        for (ItemType item: economy.getCurrentPrices().keySet()) {
+            if (item.equals(ItemType.DIAMOND)) {
+                continue;
+            }
+            if (economy.getCurrentPrices().get(item) > economy.getCurrentPrices().get(mostExpensiveResource)) {
+                mostExpensiveResource = item;
+            }
+        }
+        return convertItemTypeToTileType(mostExpensiveResource);
+    }
+
     public static TileType determineMostExpensiveResource(Economy economy) {
         ItemType mostExpensiveResource = ItemType.RUBY;
         for (ItemType item: economy.getCurrentPrices().keySet()) {

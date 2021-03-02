@@ -6,7 +6,9 @@ import mineopoly_three.item.InventoryItem;
 import mineopoly_three.item.ItemType;
 import mineopoly_three.strategy.MinePlayerStrategy;
 import mineopoly_three.strategy.PlayerBoardView;
+import mineopoly_three.tiles.Tile;
 import mineopoly_three.tiles.TileType;
+import mineopoly_three.util.DistanceUtil;
 
 import java.awt.*;
 import java.util.*;
@@ -27,7 +29,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
     private boolean isRedTurn;
 
     private List<InventoryItem> inventory = new ArrayList<>();
-    private Map<TileType, Integer> movesToMineResource = new HashMap<>();
+    private Map<TileType, Integer> turnsToMineResource = new HashMap<>();
     private int pointsScored;
     private int opponentPointsScored;
     private int currentScore = 0;
@@ -44,15 +46,15 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         this.winningScore = winningScore;
         this.isRedPlayer = isRedPlayer;
 
-        movesToMineResource.put(TileType.RESOURCE_RUBY, 1);
-        movesToMineResource.put(TileType.RESOURCE_EMERALD, 2);
-        movesToMineResource.put(TileType.RESOURCE_DIAMOND, 3);
+        turnsToMineResource.put(TileType.RESOURCE_RUBY, 1);
+        turnsToMineResource.put(TileType.RESOURCE_EMERALD, 2);
+        turnsToMineResource.put(TileType.RESOURCE_DIAMOND, 3);
     }
 
     @Override
     public TurnAction getTurnAction(PlayerBoardView boardView, Economy economy, int currentCharge, boolean isRedTurn) {
         numberOfTurns += 1;
-//        System.out.println(numberOfTurns);
+        System.out.println(numberOfTurns);
         this.currentBoard = boardView;
         this.economy = economy;
         this.currentCharge = currentCharge;
@@ -61,7 +63,11 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         this.otherPlayerLocation = boardView.getOtherPlayerLocation();
         this.itemsOnGround = currentBoard.getItemsOnGround();
 
-        TileType currentResource = Utility.determineMostExpensiveResource(economy);
+//        TileType currentResource = Utility.determineMostExpensiveResourceNotDiamond(economy);
+//        if (!Utility.tileExists(currentResource, currentBoard, boardSize)) {
+//            currentResource = TileType.RESOURCE_DIAMOND;
+//        }
+        TileType currentResource = calculateOptimalResource(currentLocation);
 
         if (currentLocationHasGem() && inventory.size() < maxInventorySize) {
             return TurnAction.PICK_UP_RESOURCE;
@@ -71,11 +77,11 @@ public class CompetitionStrategy implements MinePlayerStrategy {
             return moveToNearestMarketTile();
         }
 
-        if (!Utility.playerHasEnoughCharge(currentCharge, currentLocation, getNearestTile(TileType.RECHARGE))) {
-            return Utility.moveTowardsTile(currentLocation, getNearestTile(TileType.RECHARGE));
+        if (!Utility.playerHasEnoughCharge(currentCharge, currentLocation, getNearestTile(currentLocation, TileType.RECHARGE))) {
+            return Utility.moveTowardsTile(currentLocation, getNearestTile(currentLocation, TileType.RECHARGE));
         }
 
-        if (currentLocation.equals(getNearestTile(TileType.RECHARGE)) && currentCharge < maxCharge) {
+        if (currentLocation.equals(getNearestTile(currentLocation, TileType.RECHARGE)) && currentCharge < maxCharge) {
             return null;
         }
 
@@ -83,7 +89,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
             return moveToNearestMarketTile();
         }
 
-        Point nearestResource = getNearestTile(currentResource);
+        Point nearestResource = getNearestTile(currentLocation, currentResource);
         Point nearestGem = getNearestAvailableGem();
 
         if (currentLocation.equals(nearestGem)) {
@@ -143,11 +149,54 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         this.opponentPointsScored = opponentPointsScored;
     }
 
+    public TileType calculateOptimalResource(Point currentLocation) {
+        Point rubyPoint = getNearestTile(currentLocation, TileType.RESOURCE_RUBY);
+        Point emeraldPoint = getNearestTile(currentLocation, TileType.RESOURCE_EMERALD);
+        Point diamondPoint = getNearestTile(currentLocation, TileType.RESOURCE_DIAMOND);
+
+        int rubyDistance = DistanceUtil.getManhattanDistance(currentLocation, rubyPoint);
+        int emeraldDistance = DistanceUtil.getManhattanDistance(currentLocation, emeraldPoint);
+        int diamondDistance = DistanceUtil.getManhattanDistance(currentLocation, diamondPoint);
+
+        int potentialRubyPrice = economy.getCurrentPrices().get(ItemType.RUBY);
+        int potentialEmeraldPrice = economy.getCurrentPrices().get(ItemType.EMERALD);
+        int potentialDiamondPrice = economy.getCurrentPrices().get(ItemType.DIAMOND);
+
+        if (inventory.size() + 1 == maxInventorySize) {
+            if (isRedPlayer) {
+                rubyDistance += DistanceUtil.getManhattanDistance(rubyPoint, getNearestTile(rubyPoint, TileType.RED_MARKET));
+                emeraldDistance += DistanceUtil.getManhattanDistance(emeraldPoint, getNearestTile(emeraldPoint, TileType.RED_MARKET));
+                diamondDistance += DistanceUtil.getManhattanDistance(diamondPoint, getNearestTile(diamondPoint, TileType.RED_MARKET));
+            } else {
+                rubyDistance += DistanceUtil.getManhattanDistance(rubyPoint, getNearestTile(rubyPoint, TileType.BLUE_MARKET));
+                emeraldDistance += DistanceUtil.getManhattanDistance(emeraldPoint, getNearestTile(emeraldPoint, TileType.BLUE_MARKET));
+                diamondDistance += DistanceUtil.getManhattanDistance(diamondPoint, getNearestTile(diamondPoint, TileType.BLUE_MARKET));
+            }
+        }
+//        else {
+//            rubyDistance += DistanceUtil.getManhattanDistance(rubyPoint, getNearestTile(rubyPoint, calculateOptimalResource(rubyPoint)));
+//            emeraldDistance += DistanceUtil.getManhattanDistance(emeraldPoint, getNearestTile(emeraldPoint, calculateOptimalResource(emeraldPoint)));
+//            diamondDistance += DistanceUtil.getManhattanDistance(diamondPoint, getNearestTile(diamondPoint, calculateOptimalResource(diamondPoint)));
+//        }
+        double rubyRatio = (double) potentialRubyPrice / (rubyDistance * turnsToMineResource.get(TileType.RESOURCE_RUBY));
+        double emeraldRatio = (double) potentialEmeraldPrice / (emeraldDistance * turnsToMineResource.get(TileType.RESOURCE_EMERALD));
+        double diamondRatio = (double) potentialDiamondPrice / (diamondDistance * turnsToMineResource.get(TileType.RESOURCE_DIAMOND));
+
+        if (rubyRatio >= emeraldRatio && rubyRatio >= diamondRatio) {
+            return TileType.RESOURCE_RUBY;
+        } else if (emeraldRatio >= diamondRatio) {
+            return TileType.RESOURCE_EMERALD;
+        } else {
+            return TileType.RESOURCE_DIAMOND;
+        }
+    }
+
     public TurnAction moveToNearestMarketTile() {
         if (isRedPlayer) {
-            return Utility.moveTowardsTile(currentLocation, getNearestTile(TileType.RED_MARKET));
+            return Utility.moveTowardsTile(currentLocation, getNearestTile(currentLocation, TileType.RED_MARKET));
         }
-        return Utility.moveTowardsTile(currentLocation, getNearestTile(TileType.BLUE_MARKET));
+
+        return Utility.moveTowardsTile(currentLocation, getNearestTile(currentLocation, TileType.BLUE_MARKET));
     }
 
     public int getCurrentInventoryValue() {
@@ -155,6 +204,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         for (InventoryItem item: inventory) {
             value += economy.getCurrentPrices().get(item.getItemType());
         }
+
         return value;
     }
 
@@ -167,10 +217,11 @@ public class CompetitionStrategy implements MinePlayerStrategy {
                 }
             }
         }
+
         return false;
     }
 
-    public Point getNearestTile(TileType tile) {
+    public Point getNearestTile(Point currentLocation, TileType tile) {
         Point nearestTile = getFirstInstanceOfTile(tile);
         if (nearestTile == null) {
             return null;
