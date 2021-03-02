@@ -53,7 +53,7 @@ public class Utility {
         return true;
     }
 
-    public static TurnAction moveTowardsTile(Point currentLocation, Point point) {
+    public static TurnAction moveTowardsPoint(Point currentLocation, Point point) {
         if (point == null) {
             return null;
         }

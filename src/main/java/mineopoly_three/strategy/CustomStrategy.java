@@ -72,7 +72,7 @@ public class CustomStrategy implements MinePlayerStrategy {
 //        }
 
         if (!Utility.playerHasEnoughCharge(currentCharge, currentLocation, getNearestTile(TileType.RECHARGE))) {
-            return Utility.moveTowardsTile(currentLocation, getNearestTile(TileType.RECHARGE));
+            return Utility.moveTowardsPoint(currentLocation, getNearestTile(TileType.RECHARGE));
         }
 
         if (currentLocation.equals(getNearestTile(TileType.RECHARGE)) && currentCharge < maxCharge) {
@@ -98,20 +98,20 @@ public class CustomStrategy implements MinePlayerStrategy {
                 !currentLocation.equals(nearestGem) && !currentLocation.equals(nearestResource)) {
             TurnAction nextAction;
             if (Utility.compareManhattanDistance(currentLocation, nearestGem, nearestResource) > 0) {
-                nextAction = Utility.moveTowardsTile(currentLocation, nearestResource);
+                nextAction = Utility.moveTowardsPoint(currentLocation, nearestResource);
                 return nextAction;
             }
-            nextAction = Utility.moveTowardsTile(currentLocation, nearestGem);
+            nextAction = Utility.moveTowardsPoint(currentLocation, nearestGem);
             return nextAction;
         }
 
         if (nearestGem != null && !currentLocation.equals(nearestGem)) {
-            TurnAction nextAction = Utility.moveTowardsTile(currentLocation, nearestGem);
+            TurnAction nextAction = Utility.moveTowardsPoint(currentLocation, nearestGem);
             return nextAction;
         }
 
         if (nearestResource != null && !currentLocation.equals(nearestResource)) {
-            TurnAction nextAction = Utility.moveTowardsTile(currentLocation, nearestResource);
+            TurnAction nextAction = Utility.moveTowardsPoint(currentLocation, nearestResource);
             return nextAction;
         }
 
@@ -142,9 +142,9 @@ public class CustomStrategy implements MinePlayerStrategy {
 
     public TurnAction moveToNearestMarketTile() {
         if (isRedPlayer) {
-            return Utility.moveTowardsTile(currentLocation, getNearestTile(TileType.RED_MARKET));
+            return Utility.moveTowardsPoint(currentLocation, getNearestTile(TileType.RED_MARKET));
         }
-        return Utility.moveTowardsTile(currentLocation, getNearestTile(TileType.BLUE_MARKET));
+        return Utility.moveTowardsPoint(currentLocation, getNearestTile(TileType.BLUE_MARKET));
     }
 
     public int getCurrentInventoryValue() {
