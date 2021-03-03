@@ -15,10 +15,10 @@ import java.util.List;
 // IGNORE THIS CLASS
 
 public class UngradedStrategy implements MinePlayerStrategy {
-    public static int boardSize;
-    public static int maxInventorySize;
-    public static int maxCharge;
-    public static int winningScore;
+    public int boardSize;
+    public int maxInventorySize;
+    public int maxCharge;
+    public int winningScore;
     private boolean isRedPlayer;
     private int stagnantTime;
     private Point previousLocation;
@@ -33,10 +33,8 @@ public class UngradedStrategy implements MinePlayerStrategy {
     private Map<TileType, Integer> turnsToMineResource = new HashMap<>();
     private int pointsScored;
     private int opponentPointsScored;
-    private int currentScore = 0;
     private Map<Point, List<InventoryItem>> itemsOnGround;
     public Set<ItemType> typesOfGems = new HashSet<>(Arrays.asList(ItemType.RUBY, ItemType.EMERALD, ItemType.DIAMOND));
-    private int numberOfTurns;
 
     @Override
     public void initialize(int boardSize, int maxInventorySize, int maxCharge, int winningScore, PlayerBoardView startingBoard, Point startTileLocation, boolean isRedPlayer, Random random) {
@@ -55,8 +53,6 @@ public class UngradedStrategy implements MinePlayerStrategy {
 
     @Override
     public TurnAction getTurnAction(PlayerBoardView boardView, Economy economy, int currentCharge, boolean isRedTurn) {
-        numberOfTurns += 1;
-//        System.out.println(numberOfTurns);
         this.previousLocation = this.currentLocation;
         this.currentBoard = boardView;
         this.economy = economy;
@@ -79,10 +75,6 @@ public class UngradedStrategy implements MinePlayerStrategy {
             }
         } else {
             stagnantTime = 0;
-        }
-
-        if (getCurrentInventoryValue() + currentScore >= winningScore) {
-            return moveToNearestMarketTile();
         }
 
         if (DistanceUtil.getManhattanDistance(currentLocation, getNearestTilePoint(currentLocation, TileType.RECHARGE)) < boardSize / 4
@@ -123,15 +115,11 @@ public class UngradedStrategy implements MinePlayerStrategy {
         }
 
         if (nearestGem != null && !currentLocation.equals(nearestGem)) {
-            TurnAction nextAction = mineopoly_three.competition.Utility.moveTowardsPoint(currentLocation, nearestGem);
-
-            return nextAction;
+            return Utility.moveTowardsPoint(currentLocation, nearestGem);
         }
 
         if (nearestResource != null && !currentLocation.equals(nearestResource)) {
-            TurnAction nextAction = mineopoly_three.competition.Utility.moveTowardsPoint(currentLocation, nearestResource);
-
-            return nextAction;
+            return Utility.moveTowardsPoint(currentLocation, nearestResource);
         }
 
         return null;
@@ -144,7 +132,6 @@ public class UngradedStrategy implements MinePlayerStrategy {
 
     @Override
     public void onSoldInventory(int totalSellPrice) {
-        currentScore += totalSellPrice;
         for (int i = 0; i < inventory.size(); i++) {
             if (!inventory.get(i).getItemType().equals(ItemType.AUTOMINER)) {
                 inventory.remove(i);
@@ -155,7 +142,7 @@ public class UngradedStrategy implements MinePlayerStrategy {
 
     @Override
     public String getName() {
-        return "FUCK";
+        return "F";
     }
 
     @Override
@@ -304,9 +291,11 @@ public class UngradedStrategy implements MinePlayerStrategy {
             return null;
         }
         for (Point point: itemsOnGround.keySet()) {
-            if (itemsOnGround.get(point).contains(item)
-                    && mineopoly_three.competition.Utility.compareManhattanDistance(currentLocation, nearestItem, point) > 0) {
-                nearestItem = point;
+            for (InventoryItem inventoryItem: itemsOnGround.get(point)) {
+                if (inventoryItem.getItemType().equals(item)
+                        && Utility.compareManhattanDistance(currentLocation, nearestItem, point) > 0) {
+                    nearestItem = point;
+                }
             }
         }
 

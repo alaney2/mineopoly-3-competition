@@ -11,10 +11,10 @@ import java.util.*;
 import java.util.List;
 
 public class CustomStrategy implements MinePlayerStrategy {
-    public static int boardSize;
-    public static int maxInventorySize;
-    public static int maxCharge;
-    public static int winningScore;
+    public int boardSize;
+    public int maxInventorySize;
+    public int maxCharge;
+    public int winningScore;
     private boolean isRedPlayer;
     private Point currentLocation;
     private PlayerBoardView currentBoard;
@@ -23,7 +23,6 @@ public class CustomStrategy implements MinePlayerStrategy {
 
     private List<InventoryItem> inventory = new ArrayList<>();
     private Map<TileType, Integer> movesToMineResource = new HashMap<>();
-    private int currentScore = 0;
     private Map<Point, List<InventoryItem>> itemsOnGround;
     public Set<ItemType> typesOfGems = new HashSet<>(Arrays.asList(ItemType.RUBY, ItemType.EMERALD, ItemType.DIAMOND));
 
@@ -65,7 +64,7 @@ public class CustomStrategy implements MinePlayerStrategy {
      * @param isRedTurn For use when two players attempt to move to the same spot on the same turn
      *                   If true: The red player will move to the spot, and the blue player will do nothing
      *                   If false: The blue player will move to the spot, and the red player will do nothing
-     * @return
+     * @return TurnAction to execute
      */
     @Override
     public TurnAction getTurnAction(PlayerBoardView boardView, Economy economy, int currentCharge, boolean isRedTurn) {
@@ -80,14 +79,6 @@ public class CustomStrategy implements MinePlayerStrategy {
         if (currentLocationHasGem() && inventory.size() < maxInventorySize) {
             return TurnAction.PICK_UP_RESOURCE;
         }
-
-        /* Not sure why having this code messes up the tests in MineopolyMain.
-
-        if (getCurrentInventoryValue() + currentScore >= winningScore) {
-            return moveToNearestMarketTile();
-        }
-
-        */
 
         if (!Utility.playerHasEnoughCharge(currentCharge, currentLocation, getNearestTile(TileType.RECHARGE))) {
             return Utility.moveTowardsPoint(currentLocation, getNearestTile(TileType.RECHARGE));
@@ -125,15 +116,11 @@ public class CustomStrategy implements MinePlayerStrategy {
         }
 
         if (nearestGem != null && !currentLocation.equals(nearestGem)) {
-            TurnAction nextAction = Utility.moveTowardsPoint(currentLocation, nearestGem);
-
-            return nextAction;
+            return Utility.moveTowardsPoint(currentLocation, nearestGem);
         }
 
         if (nearestResource != null && !currentLocation.equals(nearestResource)) {
-            TurnAction nextAction = Utility.moveTowardsPoint(currentLocation, nearestResource);
-
-            return nextAction;
+            return Utility.moveTowardsPoint(currentLocation, nearestResource);
         }
 
         return null;
@@ -149,12 +136,11 @@ public class CustomStrategy implements MinePlayerStrategy {
     }
 
     /**
-     * Increases current score by totalSellPrice and clears the inventory.
+     * Clears the inventory.
      * @param totalSellPrice The combined sell price for all items in your strategy's inventory
      */
     @Override
     public void onSoldInventory(int totalSellPrice) {
-        currentScore += totalSellPrice;
         inventory.clear();
     }
 
@@ -178,7 +164,7 @@ public class CustomStrategy implements MinePlayerStrategy {
     }
 
     /**
-     * @return value of inventory
+     * @return Value of inventory
      */
     public int getCurrentInventoryValue() {
         int value = 0;
@@ -189,7 +175,7 @@ public class CustomStrategy implements MinePlayerStrategy {
     }
 
     /**
-     * @return if the current location has a gem on it
+     * @return If the current location has a gem on it
      */
     public boolean currentLocationHasGem() {
         if (currentBoard.getItemsOnGround().containsKey(currentLocation)) {
@@ -204,8 +190,8 @@ public class CustomStrategy implements MinePlayerStrategy {
     }
 
     /**
-     * @param tile tile to find
-     * @return point of nearest TileType from current location, null if there isn't one
+     * @param tile to find
+     * @return Point of nearest TileType from current location; null if there isn't one
      */
     public Point getNearestTile(TileType tile) {
         Point nearestTile = getFirstInstanceOfTile(tile);
@@ -225,7 +211,7 @@ public class CustomStrategy implements MinePlayerStrategy {
     }
 
     /**
-     * @return point of nearest gem from current location, null if there isn't one
+     * @return Point of nearest gem from current location; null if there isn't one
      */
     public Point getNearestAvailableGem() {
         Point nearestGem = getFirstInstanceOfItem(ItemType.RUBY);
@@ -244,8 +230,8 @@ public class CustomStrategy implements MinePlayerStrategy {
     }
 
     /**
-     * @param tile tile to find
-     * @return the first instance of tile, null if there isn't one
+     * @param tile to find
+     * @return The first instance of tile; null if there isn't one
      */
     public Point getFirstInstanceOfTile(TileType tile) {
         for (int row = 0; row < boardSize; row++) {
@@ -260,8 +246,8 @@ public class CustomStrategy implements MinePlayerStrategy {
     }
 
     /**
-     * @param item item to find
-     * @return the first instance of item, null if there isn't one
+     * @param item to find
+     * @return The first instance of item; null if there isn't one
      */
     public Point getFirstInstanceOfItem(ItemType item) {
         for (Point point: itemsOnGround.keySet()) {
