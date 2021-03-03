@@ -50,8 +50,8 @@ public class GameEngine extends Observable {
         WorldGenerator worldGenerator = new WorldGenerator(randomSeed);
         this.board = worldGenerator.generateBoard(boardSize);
         this.economy = new Economy(Arrays.stream(ItemType.values()).filter(ItemType::isResource).toArray(ItemType[]::new));
-        this.minScoreToWin = 30 * boardSize * boardSize;
-//        this.minScoreToWin = 100000;
+//        this.minScoreToWin = 30 * boardSize * boardSize;
+        this.minScoreToWin = 100000;
 
         this.playerWhoThrewException = null;
         this.exceptionThrown = null;

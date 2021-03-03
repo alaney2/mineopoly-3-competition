@@ -68,13 +68,13 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         this.itemsOnGround = currentBoard.getItemsOnGround();
 
         if (autominerCount == 0 && otherPlayerHasAutominer()) {
-            Point autominer = mineopoly_three.competition.Utility.getNearestAutominer(currentLocation, boardView.getItemsOnGround());
+            Point autominer = Utility.getNearestAutominer(currentLocation, boardView.getItemsOnGround());
             if (currentLocation.equals(autominer)) {
                 autominerCount += 1;
                 return TurnAction.PICK_UP_AUTOMINER;
             }
             if (autominer != null) {
-                return mineopoly_three.competition.Utility.moveTowardsPoint(currentLocation, autominer);
+                return Utility.moveTowardsPoint(currentLocation, autominer);
             }
         }
 
@@ -123,15 +123,19 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         if (nearestGem != null && nearestResource != null &&
                 !currentLocation.equals(nearestGem) && !currentLocation.equals(nearestResource)) {
 
-            return mineopoly_three.competition.Utility.moveTowardsPoint(currentLocation, gemVersusResource(nearestGem, nearestResource));
+            return Utility.moveTowardsPoint(currentLocation, gemVersusResource(nearestGem, nearestResource));
         }
 
         if (nearestGem != null && !currentLocation.equals(nearestGem)) {
-            return mineopoly_three.competition.Utility.moveTowardsPoint(currentLocation, nearestGem);
+            return Utility.moveTowardsPoint(currentLocation, nearestGem);
         }
 
         if (nearestResource != null && !currentLocation.equals(nearestResource)) {
-            return mineopoly_three.competition.Utility.moveTowardsPoint(currentLocation, nearestResource);
+            return Utility.moveTowardsPoint(currentLocation, nearestResource);
+        }
+
+        if (noResourcesOnBoard() && inventory.size() > 0) {
+            return moveToNearestMarketTile();
         }
 
         return null;
@@ -163,6 +167,20 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         this.opponentPointsScored = opponentPointsScored;
     }
 
+    public boolean noResourcesOnBoard() {
+        for (int row = 0; row < boardSize; row++) {
+            for (int col = 0; col < boardSize; col++) {
+                Point temp = new Point(col, row);
+                if (currentBoard.getTileTypeAtLocation(temp).equals(TileType.RESOURCE_RUBY)
+                        || currentBoard.getTileTypeAtLocation(temp).equals(TileType.RESOURCE_EMERALD)
+                        || currentBoard.getTileTypeAtLocation(temp).equals(TileType.RESOURCE_DIAMOND)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     public Point gemVersusResource(Point nearestGem, Point nearestResource) {
         if (Utility.compareManhattanDistance(nearestGem, currentLocation, otherPlayerLocation) > 0) {
             return nearestResource;
@@ -189,8 +207,8 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         } else if (gemType.equals(ItemType.DIAMOND) && potentialGemValue > 500) {
             potentialGemValue = 500;
         }
-        int potentialResourceValue = economy.getCurrentPrices().get(mineopoly_three.competition.Utility.convertTileTypeToItemType(resourceTile))
-                + resourceTurns * gemIncreasePerTurn.get(mineopoly_three.competition.Utility.convertTileTypeToItemType(resourceTile));
+        int potentialResourceValue = economy.getCurrentPrices().get(Utility.convertTileTypeToItemType(resourceTile))
+                + resourceTurns * gemIncreasePerTurn.get(Utility.convertTileTypeToItemType(resourceTile));
         if (resourceTile.equals(TileType.RESOURCE_RUBY) && potentialResourceValue > 400) {
             potentialResourceValue = 400;
         } else if (resourceTile.equals(TileType.RESOURCE_EMERALD) && potentialResourceValue > 450) {
@@ -259,7 +277,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
                 int distanceThere = DistanceUtil.getManhattanDistance(currentLocation, tempPoint);
                 if ((double) calculateThreeByThreeValue(tempPoint) / distanceThere > maxRatio) {
                     maxRatio = (double) calculateThreeByThreeValue(tempPoint) / distanceThere;
-                    if (mineopoly_three.competition.Utility.tileInBoard(new Point(tempPoint.x + 1, tempPoint.y + 1), boardSize)) {
+                    if (Utility.tileInBoard(new Point(tempPoint.x + 1, tempPoint.y + 1), boardSize)) {
                         bestPoint = new Point(tempPoint.x + 1, tempPoint.y + 1);
                     }
                 }
@@ -273,7 +291,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 3; col++) {
                 Point tempPoint = new Point(topLeftCorner.x + col, topLeftCorner.y + row);
-                if (!mineopoly_three.competition.Utility.tileInBoard(tempPoint, boardSize)) {
+                if (!Utility.tileInBoard(tempPoint, boardSize)) {
                     continue;
                 }
                 if (currentBoard.getTileTypeAtLocation(tempPoint)
@@ -354,10 +372,10 @@ public class CompetitionStrategy implements MinePlayerStrategy {
 
     public TurnAction moveToNearestMarketTile() {
         if (isRedPlayer) {
-            return mineopoly_three.competition.Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.RED_MARKET));
+            return Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.RED_MARKET));
         }
 
-        return mineopoly_three.competition.Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.BLUE_MARKET));
+        return Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.BLUE_MARKET));
     }
 
     public int getCurrentInventoryValue() {
@@ -393,7 +411,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         for (int row = 0; row < boardSize; row++) {
             for (int col = 0; col < boardSize; col++) {
                 if (currentBoard.getTileTypeAtLocation(col, row).equals(tile)
-                        && mineopoly_three.competition.Utility.compareManhattanDistance(currentLocation, nearestTile, new Point(col, row)) > 0) {
+                        && Utility.compareManhattanDistance(currentLocation, nearestTile, new Point(col, row)) > 0) {
                     nearestTile = new Point(col, row);
                 }
             }
