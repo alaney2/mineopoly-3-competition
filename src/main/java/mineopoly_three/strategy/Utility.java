@@ -3,7 +3,6 @@ package mineopoly_three.strategy;
 import mineopoly_three.action.TurnAction;
 import mineopoly_three.game.Economy;
 import mineopoly_three.item.ItemType;
-import mineopoly_three.strategy.PlayerBoardView;
 import mineopoly_three.tiles.TileType;
 import mineopoly_three.util.DistanceUtil;
 
@@ -30,18 +29,6 @@ public class Utility {
         } else {
             return TileType.EMPTY;
         }
-    }
-
-    public static boolean tileExists(TileType tile, PlayerBoardView currentBoard, int boardSize) {
-        for (int row = 0; row < boardSize; row++) {
-            for (int col = 0; col < boardSize; col++) {
-                if (currentBoard.getTileTypeAtLocation(col, row).equals(tile)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     public static boolean playerHasEnoughCharge(int currentCharge, Point currentLocation, Point chargerLocation) {
@@ -72,32 +59,5 @@ public class Utility {
 
     public static int compareManhattanDistance(Point start, Point p1, Point p2) {
         return DistanceUtil.getManhattanDistance(start, p1) - DistanceUtil.getManhattanDistance(start, p2);
-    }
-
-    public static boolean isOtherPlayerInWay(TurnAction nextAction, Point currentLocation, Point otherPlayerLocation) {
-        switch (nextAction) {
-            case MOVE_UP:
-                if (currentLocation.y == otherPlayerLocation.y - 1 && currentLocation.x == otherPlayerLocation.x) {
-                    return true;
-                }
-
-            case MOVE_DOWN:
-                if (currentLocation.y == otherPlayerLocation.y + 1 && currentLocation.x == otherPlayerLocation.x) {
-                    return true;
-                }
-
-            case MOVE_LEFT:
-                if (currentLocation.x == otherPlayerLocation.x - 1 && currentLocation.y == otherPlayerLocation.y) {
-                    return true;
-                }
-
-            case MOVE_RIGHT:
-                if (currentLocation.x == otherPlayerLocation.x + 1 && currentLocation.y == otherPlayerLocation.y) {
-                    return true;
-                }
-
-            default:
-                return false;
-        }
     }
 }

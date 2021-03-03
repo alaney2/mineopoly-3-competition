@@ -87,11 +87,13 @@ public class CustomStrategy implements MinePlayerStrategy {
             return TurnAction.PICK_UP_RESOURCE;
         }
 
-        // Not sure why having this code screws up the tests.
+        /* Not sure why having this code messes up the tests in MineopolyMain.
 
-//        if (getCurrentInventoryValue() + currentScore >= winningScore) {
-//            return moveToNearestMarketTile();
-//        }
+        if (getCurrentInventoryValue() + currentScore >= winningScore) {
+            return moveToNearestMarketTile();
+        }
+
+        */
 
         if (!Utility.playerHasEnoughCharge(currentCharge, currentLocation, getNearestTile(TileType.RECHARGE))) {
             return Utility.moveTowardsPoint(currentLocation, getNearestTile(TileType.RECHARGE));
@@ -124,16 +126,19 @@ public class CustomStrategy implements MinePlayerStrategy {
                 return nextAction;
             }
             nextAction = Utility.moveTowardsPoint(currentLocation, nearestGem);
+
             return nextAction;
         }
 
         if (nearestGem != null && !currentLocation.equals(nearestGem)) {
             TurnAction nextAction = Utility.moveTowardsPoint(currentLocation, nearestGem);
+
             return nextAction;
         }
 
         if (nearestResource != null && !currentLocation.equals(nearestResource)) {
             TurnAction nextAction = Utility.moveTowardsPoint(currentLocation, nearestResource);
+
             return nextAction;
         }
 
@@ -242,26 +247,6 @@ public class CustomStrategy implements MinePlayerStrategy {
 
     /**
      *
-     * @param item
-     * @return
-     */
-    public Point getNearestItemOnGround(ItemType item) {
-        Point nearestItem = getFirstInstanceOfItem(item);
-        if (nearestItem == null) {
-            return null;
-        }
-        for (Point point: itemsOnGround.keySet()) {
-            if (itemsOnGround.get(point).contains(item)
-                    && Utility.compareManhattanDistance(currentLocation, nearestItem, point) > 0) {
-                nearestItem = point;
-            }
-        }
-
-        return nearestItem;
-    }
-
-    /**
-     *
      * @return
      */
     public Point getNearestAvailableGem() {
@@ -303,10 +288,11 @@ public class CustomStrategy implements MinePlayerStrategy {
      * @return
      */
     public Point getFirstInstanceOfItem(ItemType item) {
-
         for (Point point: itemsOnGround.keySet()) {
-            if (itemsOnGround.get(point).contains(item)) {
-                return point;
+            for (InventoryItem inventoryItem: itemsOnGround.get(point)) {
+                if (inventoryItem.getItemType().equals(item)) {
+                    return point;
+                }
             }
         }
 
