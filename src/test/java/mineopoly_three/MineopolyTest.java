@@ -6,6 +6,7 @@ import mineopoly_three.item.InventoryItem;
 import mineopoly_three.item.ItemType;
 import mineopoly_three.strategy.CustomStrategy;
 import mineopoly_three.strategy.PlayerBoardView;
+import mineopoly_three.strategy.Utility;
 import mineopoly_three.tiles.TileType;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,8 +15,7 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class MineopolyTest {
     TileType[][] boardTileType;
@@ -106,6 +106,48 @@ public class MineopolyTest {
         itemsOnGround.put(new Point(0, 0), itemsAtPoint);
         boardView = new PlayerBoardView(boardTileType, itemsOnGround, new Point(0,0), new Point(), 0);
         assertEquals(TurnAction.PICK_UP_RESOURCE, strategy.getTurnAction(boardView, economy, 80, true));
+    }
+
+    @Test
+    public void goingToMarketClearsInventory() {
+        strategy.initialize(4, 1, 80, 1000, boardView, new Point(), true, new Random());
+        List<InventoryItem> itemsAtPoint = new ArrayList<>();
+        itemsAtPoint.add(new InventoryItem(ItemType.RUBY));
+        itemsOnGround.put(new Point(1, 2), itemsAtPoint);
+        boardView = new PlayerBoardView(boardTileType, itemsOnGround, new Point(1,2), new Point(), 0);
+        strategy.getTurnAction(boardView, economy, 80, true);
+        strategy.getTurnAction(boardView, economy, 80, true);
+        assertEquals(0, strategy.getInventory().size());
+    }
+
+    @Test
+    public void convertItemTypeToTileType() {
+        assertEquals(TileType.RESOURCE_RUBY, Utility.convertItemTypeToTileType(ItemType.RUBY));
+    }
+
+    @Test
+    public void playerHasEnoughCharge() {
+        assertTrue(Utility.playerHasEnoughCharge(10, new Point(0,0), new Point(0,4)));
+    }
+
+    @Test
+    public void playerDoesNotHaveEnoughCharge() {
+        assertFalse(Utility.playerHasEnoughCharge(6, new Point(0,0), new Point(4,4)));
+    }
+
+    @Test
+    public void moveTowardsPoint() {
+        assertEquals(TurnAction.MOVE_UP, Utility.moveTowardsPoint(new Point(0, 0), new Point(0, 4)));
+    }
+
+    @Test
+    public void moveTowardsPointDiagonally() {
+        assertEquals(TurnAction.MOVE_RIGHT, Utility.moveTowardsPoint(new Point(0, 0), new Point(4, 4)));
+    }
+
+    @Test
+    public void compareManhattanDistance() {
+        assertEquals(0, Utility.compareManhattanDistance(new Point(0, 0), new Point(0, 4), new Point(4, 0)));
     }
 }
 

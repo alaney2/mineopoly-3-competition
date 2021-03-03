@@ -14,7 +14,7 @@ import java.util.List;
 
 // IGNORE THIS CLASS
 
-public class UngradedStrategy implements MinePlayerStrategy {
+public class TestStrategy implements MinePlayerStrategy {
     public int boardSize;
     public int maxInventorySize;
     public int maxCharge;

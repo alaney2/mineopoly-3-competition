@@ -25,13 +25,11 @@ public class CompetitionStrategy implements MinePlayerStrategy {
     private Point otherPlayerLocation;
     private PlayerBoardView currentBoard;
     private Economy economy;
-    private int currentCharge;
-    private boolean isRedTurn;
     private int currentScore = 0;
 
     private List<InventoryItem> inventory = new ArrayList<>();
-    private Map<TileType, Integer> turnsToMineResource = new HashMap<>();
-    private Map<ItemType, Integer> gemIncreasePerTurn = new HashMap<>();
+    private final Map<TileType, Integer> turnsToMineResource = new HashMap<>();
+    private final Map<ItemType, Integer> gemIncreasePerTurn = new HashMap<>();
     private int pointsScored;
     private int opponentPointsScored;
     private int otherPlayerScore;
@@ -62,8 +60,6 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         this.previousLocation = this.currentLocation;
         this.currentBoard = boardView;
         this.economy = economy;
-        this.currentCharge = currentCharge;
-        this.isRedTurn = isRedTurn;
         this.currentLocation = boardView.getYourLocation();
         this.otherPlayerLocation = boardView.getOtherPlayerLocation();
         this.itemsOnGround = currentBoard.getItemsOnGround();

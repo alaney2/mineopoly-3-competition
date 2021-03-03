@@ -19,13 +19,13 @@ public class CustomStrategy implements MinePlayerStrategy {
     private Point currentLocation;
     private PlayerBoardView currentBoard;
     private Economy economy;
-    private int currentCharge;
 
-    private List<InventoryItem> inventory = new ArrayList<>();
-    private Map<TileType, Integer> movesToMineResource = new HashMap<>();
+    private final List<InventoryItem> inventory = new ArrayList<>();
+    private final Map<TileType, Integer> movesToMineResource = new HashMap<>();
     private Map<Point, List<InventoryItem>> itemsOnGround;
     public Set<ItemType> typesOfGems = new HashSet<>(Arrays.asList(ItemType.RUBY, ItemType.EMERALD, ItemType.DIAMOND));
 
+    public List<InventoryItem> getInventory() { return inventory; }
 
     /**
      * Initializes constant variables.
@@ -70,11 +70,8 @@ public class CustomStrategy implements MinePlayerStrategy {
     public TurnAction getTurnAction(PlayerBoardView boardView, Economy economy, int currentCharge, boolean isRedTurn) {
         this.currentBoard = boardView;
         this.economy = economy;
-        this.currentCharge = currentCharge;
         this.currentLocation = boardView.getYourLocation();
         this.itemsOnGround = currentBoard.getItemsOnGround();
-
-        TileType currentResource = Utility.determineMostExpensiveResource(economy);
 
         if (currentLocationHasGem() && inventory.size() < maxInventorySize) {
             return TurnAction.PICK_UP_RESOURCE;
@@ -92,6 +89,7 @@ public class CustomStrategy implements MinePlayerStrategy {
             return moveToNearestMarketTile();
         }
 
+        TileType currentResource = Utility.determineMostExpensiveResource(economy);
         Point nearestResource = getNearestTile(currentResource);
         Point nearestGem = getNearestAvailableGem();
 
@@ -105,14 +103,12 @@ public class CustomStrategy implements MinePlayerStrategy {
 
         if (nearestGem != null && nearestResource != null &&
                 !currentLocation.equals(nearestGem) && !currentLocation.equals(nearestResource)) {
-            TurnAction nextAction;
-            if (Utility.compareManhattanDistance(currentLocation, nearestGem, nearestResource) > 0) {
-                nextAction = Utility.moveTowardsPoint(currentLocation, nearestResource);
-                return nextAction;
-            }
-            nextAction = Utility.moveTowardsPoint(currentLocation, nearestGem);
 
-            return nextAction;
+            if (Utility.compareManhattanDistance(currentLocation, nearestGem, nearestResource) > 0) {
+                return Utility.moveTowardsPoint(currentLocation, nearestResource);
+            }
+
+            return Utility.moveTowardsPoint(currentLocation, nearestGem);
         }
 
         if (nearestGem != null && !currentLocation.equals(nearestGem)) {
@@ -160,6 +156,7 @@ public class CustomStrategy implements MinePlayerStrategy {
         if (isRedPlayer) {
             return Utility.moveTowardsPoint(currentLocation, getNearestTile(TileType.RED_MARKET));
         }
+
         return Utility.moveTowardsPoint(currentLocation, getNearestTile(TileType.BLUE_MARKET));
     }
 
@@ -171,6 +168,7 @@ public class CustomStrategy implements MinePlayerStrategy {
         for (InventoryItem item: inventory) {
             value += economy.getCurrentPrices().get(item.getItemType());
         }
+
         return value;
     }
 
@@ -186,6 +184,7 @@ public class CustomStrategy implements MinePlayerStrategy {
                 }
             }
         }
+
         return false;
     }
 
