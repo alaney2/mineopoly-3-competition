@@ -39,7 +39,7 @@ public class MineopolyMain {
         if (savedReplayFilePath == null) {
             // Not viewing a replay, play a game with a GUI instead
             MinePlayerStrategy redStrategy = new CustomStrategy();
-            MinePlayerStrategy blueStrategy = new CompetitionStrategy();
+            MinePlayerStrategy blueStrategy = new RandomStrategy();
             long randomSeed = System.currentTimeMillis();
             gameEngine = new GameEngine(DEFAULT_BOARD_SIZE, redStrategy, blueStrategy, randomSeed);
             gameEngine.setGuiEnabled(true);

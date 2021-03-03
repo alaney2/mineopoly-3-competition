@@ -48,7 +48,7 @@ public class Utility {
      */
     public static boolean playerHasEnoughCharge(int currentCharge, Point currentLocation, Point chargerLocation) {
         int distanceToNearestCharger = DistanceUtil.getManhattanDistance(currentLocation, chargerLocation);
-        return currentCharge <= distanceToNearestCharger;
+        return currentCharge >= distanceToNearestCharger;
     }
 
     /**
