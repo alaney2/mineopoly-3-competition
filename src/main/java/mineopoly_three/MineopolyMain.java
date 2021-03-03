@@ -21,7 +21,7 @@ public class MineopolyMain {
 
     public static void main(String[] args) {
         if (TEST_STRATEGY_WIN_PERCENT) {
-            MinePlayerStrategy yourStrategy = new CustomStrategy();
+            MinePlayerStrategy yourStrategy = new UngradedStrategy();
             int[] assignmentBoardSizes = new int[]{14, 20, 26, 32};
 
             for (int testBoardSize : assignmentBoardSizes) {
@@ -38,7 +38,7 @@ public class MineopolyMain {
         final GameEngine gameEngine;
         if (savedReplayFilePath == null) {
             // Not viewing a replay, play a game with a GUI instead
-            MinePlayerStrategy redStrategy = new CustomStrategy();
+            MinePlayerStrategy redStrategy = new UngradedStrategy();
             MinePlayerStrategy blueStrategy = new RandomStrategy();
             long randomSeed = System.currentTimeMillis();
             gameEngine = new GameEngine(DEFAULT_BOARD_SIZE, redStrategy, blueStrategy, randomSeed);

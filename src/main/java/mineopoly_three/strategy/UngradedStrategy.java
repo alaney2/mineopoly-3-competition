@@ -82,9 +82,11 @@ public class UngradedStrategy implements MinePlayerStrategy {
             return mineopoly_three.competition.Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.RECHARGE));
         }
 
-        if (!mineopoly_three.competition.Utility.playerHasEnoughCharge(currentCharge, currentLocation,
-                getNearestTilePoint(currentLocation, currentResource), getNearestTilePoint(currentLocation, TileType.RECHARGE))) {
-            return mineopoly_three.competition.Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.RECHARGE));
+        if (getNearestTilePoint(currentLocation, currentResource) != null) {
+            if (!mineopoly_three.competition.Utility.playerHasEnoughCharge(currentCharge, currentLocation,
+                    getNearestTilePoint(currentLocation, currentResource), getNearestTilePoint(currentLocation, TileType.RECHARGE))) {
+                return mineopoly_three.competition.Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.RECHARGE));
+            }
         }
 
         if (currentLocation.equals(getNearestTilePoint(currentLocation, TileType.RECHARGE)) && currentCharge < maxCharge) {
