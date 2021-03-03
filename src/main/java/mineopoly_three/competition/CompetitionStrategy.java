@@ -80,7 +80,8 @@ public class CompetitionStrategy implements MinePlayerStrategy {
             }
         }
 
-        if (inventory.contains(new InventoryItem(ItemType.AUTOMINER)) && currentScore > winningScore * 0.4) {
+        if (autominerInInventory() && currentScore > winningScore * 0.5) {
+            inventory.clear();
             return TurnAction.PLACE_AUTOMINER;
         }
 
@@ -154,6 +155,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
 
     @Override
     public void onSoldInventory(int totalSellPrice) {
+        currentScore += totalSellPrice;
         for (int i = 0; i < inventory.size(); i++) {
             if (!inventory.get(i).getItemType().equals(ItemType.AUTOMINER)) {
                 inventory.remove(i);
@@ -171,6 +173,15 @@ public class CompetitionStrategy implements MinePlayerStrategy {
     public void endRound(int pointsScored, int opponentPointsScored) {
         this.pointsScored = pointsScored;
         this.opponentPointsScored = opponentPointsScored;
+    }
+
+    public boolean autominerInInventory() {
+        for (InventoryItem item: inventory) {
+            if (item.getItemType().equals(ItemType.AUTOMINER)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean noResourcesOnBoard() {
