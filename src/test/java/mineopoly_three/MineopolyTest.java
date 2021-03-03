@@ -15,6 +15,7 @@ import java.util.*;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class MineopolyTest {
     TileType[][] boardTileType;
@@ -47,7 +48,7 @@ public class MineopolyTest {
     @Test
     public void stayOnChargerWhenBatteryNotFull() {
         boardView = new PlayerBoardView(boardTileType, new HashMap<>(), new Point(0,3), new Point(), 0);
-        assertEquals(null, strategy.getTurnAction(boardView, economy, 1, true));
+        assertNull(strategy.getTurnAction(boardView, economy, 60, true));
     }
 
     @Test

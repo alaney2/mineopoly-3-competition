@@ -95,12 +95,14 @@ public class CompetitionStrategy implements MinePlayerStrategy {
 
         if (DistanceUtil.getManhattanDistance(currentLocation, getNearestTilePoint(currentLocation, TileType.RECHARGE)) < boardSize / 4
                 && currentCharge < maxCharge/2) {
-            return mineopoly_three.competition.Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.RECHARGE));
+            return Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.RECHARGE));
         }
 
-        if (!mineopoly_three.competition.Utility.playerHasEnoughCharge(currentCharge, currentLocation,
-                getNearestTilePoint(currentLocation, currentResource), getNearestTilePoint(currentLocation, TileType.RECHARGE))) {
-            return mineopoly_three.competition.Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.RECHARGE));
+        if (getNearestTilePoint(currentLocation, currentResource) != null) {
+            if (!Utility.playerHasEnoughCharge(currentCharge, currentLocation,
+                    getNearestTilePoint(currentLocation, currentResource), getNearestTilePoint(currentLocation, TileType.RECHARGE))) {
+                return Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.RECHARGE));
+            }
         }
 
         if (currentLocation.equals(getNearestTilePoint(currentLocation, TileType.RECHARGE)) && currentCharge < maxCharge) {
@@ -142,7 +144,6 @@ public class CompetitionStrategy implements MinePlayerStrategy {
 
     @Override
     public void onSoldInventory(int totalSellPrice) {
-        currentScore += totalSellPrice;
         for (int i = 0; i < inventory.size(); i++) {
             if (!inventory.get(i).getItemType().equals(ItemType.AUTOMINER)) {
                 inventory.remove(i);
@@ -174,6 +175,9 @@ public class CompetitionStrategy implements MinePlayerStrategy {
                 gemType = item.getItemType();
             }
         }
+        if (gemType == null) {
+            return nearestResource;
+        }
         int gemTurns = DistanceUtil.getManhattanDistance(currentLocation, nearestGem);
         int resourceTurns = DistanceUtil.getManhattanDistance(currentLocation, nearestResource)
                 + turnsToMineResource.get(resourceTile);
@@ -195,7 +199,6 @@ public class CompetitionStrategy implements MinePlayerStrategy {
             potentialResourceValue = 500;
         }
         if ((double) (potentialGemValue / gemTurns) > (double) (potentialResourceValue / resourceTurns)) {
-            System.out.println("HERE");
             return nearestGem;
         }
         return nearestResource;
@@ -383,6 +386,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
 
     public Point getNearestTilePoint(Point currentLocation, TileType tile) {
         Point nearestTile = getFirstInstanceOfTile(tile);
+//        System.out.println(nearestTile);
         if (nearestTile == null) {
             return null;
         }
@@ -396,6 +400,18 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         }
 
         return nearestTile;
+    }
+
+    public Point getFirstInstanceOfTile(TileType tile) {
+        for (int row = 0; row < boardSize; row++) {
+            for (int col = 0; col < boardSize; col++) {
+                if (currentBoard.getTileTypeAtLocation(col, row).equals(tile)) {
+                    return new Point(col, row);
+                }
+            }
+        }
+
+        return null;
     }
 
     public Point getNearestItemOnGround(ItemType item) {
@@ -435,18 +451,6 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         }
 
         return nearestGem;
-    }
-
-    public Point getFirstInstanceOfTile(TileType tile) {
-        for (int row = 0; row < boardSize; row++) {
-            for (int col = 0; col < boardSize; col++) {
-                if (currentBoard.getTileTypeAtLocation(col, row).equals(tile)) {
-                    return new Point(col, row);
-                }
-            }
-        }
-
-        return null;
     }
 
     public Point getFirstInstanceOfItem(ItemType item) {
