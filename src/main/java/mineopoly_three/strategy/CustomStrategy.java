@@ -17,24 +17,19 @@ public class CustomStrategy implements MinePlayerStrategy {
     public static int winningScore;
     private boolean isRedPlayer;
     private Point currentLocation;
-    private Point otherPlayerLocation;
     private PlayerBoardView currentBoard;
     private Economy economy;
     private int currentCharge;
-    private boolean isRedTurn;
 
     private List<InventoryItem> inventory = new ArrayList<>();
     private Map<TileType, Integer> movesToMineResource = new HashMap<>();
-    private int pointsScored;
-    private int opponentPointsScored;
     private int currentScore = 0;
     private Map<Point, List<InventoryItem>> itemsOnGround;
     public Set<ItemType> typesOfGems = new HashSet<>(Arrays.asList(ItemType.RUBY, ItemType.EMERALD, ItemType.DIAMOND));
-    private int numberOfTurns;
 
 
     /**
-     *
+     * Initializes constant variables.
      * @param boardSize The length and width of the square game board
      * @param maxInventorySize The maximum number of items that your player can carry at one time
      * @param maxCharge The amount of charge your robot starts with (number of tile moves before needing to recharge)
@@ -60,7 +55,9 @@ public class CustomStrategy implements MinePlayerStrategy {
     }
 
     /**
-     *
+     * Finds the most expensive resource in economy and mines it. If there is a gem on the way, pick it up.
+     * If there isn't enough charge to reach the destination, move to a charger. If inventory is full,
+     * move to the market and sell everything.
      * @param boardView A PlayerBoardView object representing all the information about the board and the other player
      *                   that your strategy is allowed to access
      * @param economy The GameEngine's economy object which holds current prices for resources
@@ -72,13 +69,10 @@ public class CustomStrategy implements MinePlayerStrategy {
      */
     @Override
     public TurnAction getTurnAction(PlayerBoardView boardView, Economy economy, int currentCharge, boolean isRedTurn) {
-        numberOfTurns += 1;
         this.currentBoard = boardView;
         this.economy = economy;
         this.currentCharge = currentCharge;
-        this.isRedTurn = isRedTurn;
         this.currentLocation = boardView.getYourLocation();
-        this.otherPlayerLocation = boardView.getOtherPlayerLocation();
         this.itemsOnGround = currentBoard.getItemsOnGround();
 
         TileType currentResource = Utility.determineMostExpensiveResource(economy);
@@ -146,7 +140,7 @@ public class CustomStrategy implements MinePlayerStrategy {
     }
 
     /**
-     *
+     * Adds the item received to a list.
      * @param itemReceived The item received from the player's TurnAction on their last turn
      */
     @Override
@@ -155,7 +149,7 @@ public class CustomStrategy implements MinePlayerStrategy {
     }
 
     /**
-     *
+     * Increases current score by totalSellPrice and clears the inventory.
      * @param totalSellPrice The combined sell price for all items in your strategy's inventory
      */
     @Override
@@ -164,29 +158,17 @@ public class CustomStrategy implements MinePlayerStrategy {
         inventory.clear();
     }
 
-    /**
-     *
-     * @return
-     */
     @Override
     public String getName() {
         return "CustomStrategy";
     }
 
-    /**
-     *
-     * @param pointsScored The total number of points this strategy scored
-     * @param opponentPointsScored The total number of points the opponent's strategy scored
-     */
     @Override
-    public void endRound(int pointsScored, int opponentPointsScored) {
-        this.pointsScored = pointsScored;
-        this.opponentPointsScored = opponentPointsScored;
-    }
+    public void endRound(int pointsScored, int opponentPointsScored) { }
 
     /**
-     *
-     * @return
+     * Finds nearest market tile based on color.
+     * @return TurnAction in direction of nearest market
      */
     public TurnAction moveToNearestMarketTile() {
         if (isRedPlayer) {
@@ -196,8 +178,7 @@ public class CustomStrategy implements MinePlayerStrategy {
     }
 
     /**
-     *
-     * @return
+     * @return value of inventory
      */
     public int getCurrentInventoryValue() {
         int value = 0;
@@ -208,8 +189,7 @@ public class CustomStrategy implements MinePlayerStrategy {
     }
 
     /**
-     *
-     * @return
+     * @return if the current location has a gem on it
      */
     public boolean currentLocationHasGem() {
         if (currentBoard.getItemsOnGround().containsKey(currentLocation)) {
@@ -224,9 +204,8 @@ public class CustomStrategy implements MinePlayerStrategy {
     }
 
     /**
-     *
-     * @param tile
-     * @return
+     * @param tile tile to find
+     * @return point of nearest TileType from current location, null if there isn't one
      */
     public Point getNearestTile(TileType tile) {
         Point nearestTile = getFirstInstanceOfTile(tile);
@@ -246,8 +225,7 @@ public class CustomStrategy implements MinePlayerStrategy {
     }
 
     /**
-     *
-     * @return
+     * @return point of nearest gem from current location, null if there isn't one
      */
     public Point getNearestAvailableGem() {
         Point nearestGem = getFirstInstanceOfItem(ItemType.RUBY);
@@ -266,9 +244,8 @@ public class CustomStrategy implements MinePlayerStrategy {
     }
 
     /**
-     *
-     * @param tile
-     * @return
+     * @param tile tile to find
+     * @return the first instance of tile, null if there isn't one
      */
     public Point getFirstInstanceOfTile(TileType tile) {
         for (int row = 0; row < boardSize; row++) {
@@ -283,9 +260,8 @@ public class CustomStrategy implements MinePlayerStrategy {
     }
 
     /**
-     *
-     * @param item
-     * @return
+     * @param item item to find
+     * @return the first instance of item, null if there isn't one
      */
     public Point getFirstInstanceOfItem(ItemType item) {
         for (Point point: itemsOnGround.keySet()) {

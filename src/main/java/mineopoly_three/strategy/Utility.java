@@ -9,6 +9,11 @@ import mineopoly_three.util.DistanceUtil;
 import java.awt.*;
 
 public class Utility {
+    /**
+     *
+     * @param economy
+     * @return
+     */
     public static TileType determineMostExpensiveResource(Economy economy) {
         ItemType mostExpensiveResource = ItemType.RUBY;
         for (ItemType item: economy.getCurrentPrices().keySet()) {
@@ -19,6 +24,11 @@ public class Utility {
         return convertItemTypeToTileType(mostExpensiveResource);
     }
 
+    /**
+     *
+     * @param item
+     * @return
+     */
     public static TileType convertItemTypeToTileType(ItemType item) {
         if (item.equals(ItemType.RUBY)) {
             return TileType.RESOURCE_RUBY;
@@ -31,6 +41,13 @@ public class Utility {
         }
     }
 
+    /**
+     *
+     * @param currentCharge
+     * @param currentLocation
+     * @param chargerLocation
+     * @return
+     */
     public static boolean playerHasEnoughCharge(int currentCharge, Point currentLocation, Point chargerLocation) {
         int distanceToNearestCharger = DistanceUtil.getManhattanDistance(currentLocation, chargerLocation);
         if (currentCharge <= distanceToNearestCharger) {
@@ -40,6 +57,12 @@ public class Utility {
         return true;
     }
 
+    /**
+     *
+     * @param currentLocation
+     * @param point
+     * @return
+     */
     public static TurnAction moveTowardsPoint(Point currentLocation, Point point) {
         if (point == null) {
             return null;
@@ -57,6 +80,13 @@ public class Utility {
         }
     }
 
+    /**
+     *
+     * @param start
+     * @param p1
+     * @param p2
+     * @return
+     */
     public static int compareManhattanDistance(Point start, Point p1, Point p2) {
         return DistanceUtil.getManhattanDistance(start, p1) - DistanceUtil.getManhattanDistance(start, p2);
     }
