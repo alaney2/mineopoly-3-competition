@@ -12,6 +12,8 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
+// IGNORE THIS CLASS
+
 public class UngradedStrategy implements MinePlayerStrategy {
     public static int boardSize;
     public static int maxInventorySize;

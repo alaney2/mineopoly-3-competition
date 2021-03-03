@@ -10,7 +10,7 @@ import mineopoly_three.util.DistanceUtil;
 import java.awt.*;
 
 public class Utility {
-    static TileType determineMostExpensiveResource(Economy economy) {
+    public static TileType determineMostExpensiveResource(Economy economy) {
         ItemType mostExpensiveResource = ItemType.RUBY;
         for (ItemType item: economy.getCurrentPrices().keySet()) {
             if (economy.getCurrentPrices().get(item) > economy.getCurrentPrices().get(mostExpensiveResource)) {
@@ -20,7 +20,7 @@ public class Utility {
         return convertItemTypeToTileType(mostExpensiveResource);
     }
 
-    static TileType convertItemTypeToTileType(ItemType item) {
+    public static TileType convertItemTypeToTileType(ItemType item) {
         if (item.equals(ItemType.RUBY)) {
             return TileType.RESOURCE_RUBY;
         } else if (item.equals(ItemType.EMERALD)) {
@@ -32,7 +32,7 @@ public class Utility {
         }
     }
 
-    static boolean tileExists(TileType tile, PlayerBoardView currentBoard, int boardSize) {
+    public static boolean tileExists(TileType tile, PlayerBoardView currentBoard, int boardSize) {
         for (int row = 0; row < boardSize; row++) {
             for (int col = 0; col < boardSize; col++) {
                 if (currentBoard.getTileTypeAtLocation(col, row).equals(tile)) {
@@ -44,7 +44,7 @@ public class Utility {
         return false;
     }
 
-    static boolean playerHasEnoughCharge(int currentCharge, Point currentLocation, Point chargerLocation) {
+    public static boolean playerHasEnoughCharge(int currentCharge, Point currentLocation, Point chargerLocation) {
         int distanceToNearestCharger = DistanceUtil.getManhattanDistance(currentLocation, chargerLocation);
         if (currentCharge <= distanceToNearestCharger) {
             return false;
@@ -53,7 +53,7 @@ public class Utility {
         return true;
     }
 
-    static TurnAction moveTowardsPoint(Point currentLocation, Point point) {
+    public static TurnAction moveTowardsPoint(Point currentLocation, Point point) {
         if (point == null) {
             return null;
         }
@@ -70,11 +70,11 @@ public class Utility {
         }
     }
 
-    static int compareManhattanDistance(Point start, Point p1, Point p2) {
+    public static int compareManhattanDistance(Point start, Point p1, Point p2) {
         return DistanceUtil.getManhattanDistance(start, p1) - DistanceUtil.getManhattanDistance(start, p2);
     }
 
-    static boolean isOtherPlayerInWay(TurnAction nextAction, Point currentLocation, Point otherPlayerLocation) {
+    public static boolean isOtherPlayerInWay(TurnAction nextAction, Point currentLocation, Point otherPlayerLocation) {
         switch (nextAction) {
             case MOVE_UP:
                 if (currentLocation.y == otherPlayerLocation.y - 1 && currentLocation.x == otherPlayerLocation.x) {

@@ -175,6 +175,9 @@ public class CompetitionStrategy implements MinePlayerStrategy {
     }
 
     public Point gemVersusResource(Point nearestGem, Point nearestResource) {
+        if (Utility.compareManhattanDistance(nearestGem, currentLocation, otherPlayerLocation) > 0) {
+            return nearestResource;
+        }
         TileType resourceTile = currentBoard.getTileTypeAtLocation(nearestResource);
         ItemType gemType = null;
 
@@ -203,7 +206,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         } else if (resourceTile.equals(TileType.RESOURCE_DIAMOND) && potentialResourceValue > 500) {
             potentialResourceValue = 500;
         }
-        if ((double) (1.5 * potentialGemValue / gemTurns) > (double) (potentialResourceValue / resourceTurns)) {
+        if ((double) (potentialGemValue / gemTurns) > (double) (potentialResourceValue / resourceTurns)) {
             System.out.println("HERE");
             return nearestGem;
         }
