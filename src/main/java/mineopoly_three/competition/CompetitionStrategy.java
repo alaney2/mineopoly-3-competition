@@ -80,7 +80,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
             }
         }
 
-        if (inventory.contains(new InventoryItem(ItemType.AUTOMINER)) && currentScore > winningScore / 2) {
+        if (inventory.contains(new InventoryItem(ItemType.AUTOMINER)) && currentScore > winningScore * 0.4) {
             return TurnAction.PLACE_AUTOMINER;
         }
 
