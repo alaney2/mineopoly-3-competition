@@ -37,6 +37,8 @@ public class CompetitionStrategy implements MinePlayerStrategy {
     public Set<ItemType> typesOfGems = new HashSet<>(Arrays.asList(ItemType.RUBY, ItemType.EMERALD, ItemType.DIAMOND));
     private int autominerCount = 0;
 
+    public CompetitionStrategy() { }
+
     @Override
     public void initialize(int boardSize, int maxInventorySize, int maxCharge, int winningScore, PlayerBoardView startingBoard, Point startTileLocation, boolean isRedPlayer, Random random) {
         this.boardSize = boardSize;
