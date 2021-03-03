@@ -34,6 +34,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
     private Map<ItemType, Integer> gemIncreasePerTurn = new HashMap<>();
     private int pointsScored;
     private int opponentPointsScored;
+    private int otherPlayerScore;
     private Map<Point, List<InventoryItem>> itemsOnGround;
     public Set<ItemType> typesOfGems = new HashSet<>(Arrays.asList(ItemType.RUBY, ItemType.EMERALD, ItemType.DIAMOND));
     private int autominerCount = 0;
@@ -66,6 +67,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         this.currentLocation = boardView.getYourLocation();
         this.otherPlayerLocation = boardView.getOtherPlayerLocation();
         this.itemsOnGround = currentBoard.getItemsOnGround();
+        this.otherPlayerScore = boardView.getOtherPlayerScore();
 
         if (autominerCount == 0 && otherPlayerHasAutominer()) {
             Point autominer = Utility.getNearestAutominer(currentLocation, boardView.getItemsOnGround());
@@ -78,6 +80,10 @@ public class CompetitionStrategy implements MinePlayerStrategy {
             }
         }
 
+        if (inventory.contains(new InventoryItem(ItemType.AUTOMINER)) && currentScore > winningScore / 2) {
+            return TurnAction.PLACE_AUTOMINER;
+        }
+
         TileType currentResource = calculateOptimalResource();
 
         if (currentLocationHasGem() && inventory.size() < maxInventorySize) {
@@ -86,7 +92,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
 
         if (currentLocation.equals(previousLocation)) {
             stagnantTime += 1;
-            if (stagnantTime >= 10) {
+            if (stagnantTime >= 10 && currentScore < otherPlayerScore) {
                 return actionIfOtherPlayerInWay();
             }
         } else {
