@@ -15,9 +15,10 @@ public class MineopolyMain {
     private static final boolean TEST_STRATEGY_WIN_PERCENT = false; // Change to true to test your win percent
 
     // Use this if you want to view a past match replay
-    private static final String savedReplayFilePath = null;
+//    private static final String savedReplayFilePath = null;
+    private static final String savedReplayFilePath = "src/main/java/mineopoly_three/replay/replay";
     // Use this to save a replay of the current match
-    private static final String replayOutputFilePath = null;
+    private static final String replayOutputFilePath = "src/main/java/mineopoly_three/replay/replay";
 
     public static void main(String[] args) {
         if (TEST_STRATEGY_WIN_PERCENT) {

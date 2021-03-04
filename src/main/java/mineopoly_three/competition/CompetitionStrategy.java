@@ -26,6 +26,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
     private PlayerBoardView currentBoard;
     private Economy economy;
     private int currentScore = 0;
+    private int numTurns = 0;
 
     private List<InventoryItem> inventory = new ArrayList<>();
     private final Map<TileType, Integer> turnsToMineResource = new HashMap<>();
@@ -59,6 +60,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
 
     @Override
     public TurnAction getTurnAction(PlayerBoardView boardView, Economy economy, int currentCharge, boolean isRedTurn) {
+        numTurns += 1;
         this.previousLocation = this.currentLocation;
         this.currentBoard = boardView;
         this.economy = economy;
@@ -66,6 +68,20 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         this.otherPlayerLocation = boardView.getOtherPlayerLocation();
         this.itemsOnGround = currentBoard.getItemsOnGround();
         this.otherPlayerScore = boardView.getOtherPlayerScore();
+
+        if (isRedPlayer) {
+            if (DistanceUtil.getManhattanDistance(currentLocation, getNearestTilePoint(currentLocation, TileType.RED_MARKET)) >= 1000 - numTurns) {
+                return moveToNearestMarketTile();
+            }
+        } else {
+            if (DistanceUtil.getManhattanDistance(currentLocation, getNearestTilePoint(currentLocation, TileType.BLUE_MARKET)) >= 1000 - numTurns) {
+                return moveToNearestMarketTile();
+            }
+        }
+
+        if (currentScore + getValueOfInventory() >= winningScore) {
+            return moveToNearestMarketTile();
+        }
 
         if (autominerCount == 0 && otherPlayerHasAutominer()) {
             Point autominer = Utility.getNearestAutominer(currentLocation, boardView.getItemsOnGround());
@@ -91,7 +107,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
 
         if (currentLocation.equals(previousLocation)) {
             stagnantTime += 1;
-            if (stagnantTime >= 10 && currentScore < otherPlayerScore) {
+            if (stagnantTime >= 10) {
                 return actionIfOtherPlayerInWay();
             }
         } else {
@@ -171,6 +187,20 @@ public class CompetitionStrategy implements MinePlayerStrategy {
     public void endRound(int pointsScored, int opponentPointsScored) {
         this.pointsScored = pointsScored;
         this.opponentPointsScored = opponentPointsScored;
+    }
+
+    public int getValueOfInventory() {
+        int value = 0;
+        for (InventoryItem item: inventory) {
+            if (item.getItemType().equals(ItemType.RUBY)) {
+                value += economy.getCurrentPrices().get(ItemType.RUBY);
+            } else if (item.getItemType().equals(ItemType.EMERALD)) {
+                value += economy.getCurrentPrices().get(ItemType.EMERALD);
+            } else if (item.getItemType().equals(ItemType.DIAMOND)) {
+                value += economy.getCurrentPrices().get(ItemType.DIAMOND);
+            }
+        }
+        return value;
     }
 
     public boolean autominerInInventory() {
