@@ -79,10 +79,6 @@ public class CompetitionStrategy implements MinePlayerStrategy {
             }
         }
 
-        if (currentScore + getValueOfInventory() >= winningScore) {
-            return moveToNearestMarketTile();
-        }
-
         if (autominerCount == 0 && otherPlayerHasAutominer()) {
             Point autominer = Utility.getNearestAutominer(currentLocation, boardView.getItemsOnGround());
             if (currentLocation.equals(autominer)) {
