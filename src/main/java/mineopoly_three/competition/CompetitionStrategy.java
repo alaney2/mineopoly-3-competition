@@ -79,6 +79,10 @@ public class CompetitionStrategy implements MinePlayerStrategy {
             }
         }
 
+        if (getCurrentInventoryValue() + currentScore > winningScore) {
+            return moveToNearestMarketTile();
+        }
+
         if (autominerCount == 0 && otherPlayerHasAutominer()) {
             Point autominer = Utility.getNearestAutominer(currentLocation, boardView.getItemsOnGround());
             if (currentLocation.equals(autominer)) {
@@ -181,8 +185,9 @@ public class CompetitionStrategy implements MinePlayerStrategy {
 
     @Override
     public void endRound(int pointsScored, int opponentPointsScored) {
-        this.pointsScored = pointsScored;
-        this.opponentPointsScored = opponentPointsScored;
+        numTurns = 0;
+        currentScore = 0;
+        inventory.clear();
     }
 
     public int getValueOfInventory() {
