@@ -79,7 +79,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
             }
         }
 
-        if (getCurrentInventoryValue() + currentScore > winningScore) {
+        if (getCurrentInventoryValue() + currentScore >= winningScore) {
             return moveToNearestMarketTile();
         }
 
@@ -107,7 +107,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
 
         if (currentLocation.equals(previousLocation)) {
             stagnantTime += 1;
-            if (stagnantTime >= 10) {
+            if (stagnantTime >= 10 && currentScore <= otherPlayerScore) {
                 return actionIfOtherPlayerInWay();
             }
         } else {

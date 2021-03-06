@@ -25,20 +25,23 @@ public class CustomStrategy implements MinePlayerStrategy {
     private Map<Point, List<InventoryItem>> itemsOnGround;
     public Set<ItemType> typesOfGems = new HashSet<>(Arrays.asList(ItemType.RUBY, ItemType.EMERALD, ItemType.DIAMOND));
 
-    public List<InventoryItem> getInventory() { return inventory; }
+    public List<InventoryItem> getInventory() {
+        return inventory;
+    }
 
     /**
      * Initializes constant variables.
-     * @param boardSize The length and width of the square game board
-     * @param maxInventorySize The maximum number of items that your player can carry at one time
-     * @param maxCharge The amount of charge your robot starts with (number of tile moves before needing to recharge)
-     * @param winningScore The first player to reach this score wins the round
-     * @param startingBoard A view of the GameBoard at the start of the game. You can use this to pre-compute fixed
-     *                       information, like the locations of market or recharge tiles
+     *
+     * @param boardSize         The length and width of the square game board
+     * @param maxInventorySize  The maximum number of items that your player can carry at one time
+     * @param maxCharge         The amount of charge your robot starts with (number of tile moves before needing to recharge)
+     * @param winningScore      The first player to reach this score wins the round
+     * @param startingBoard     A view of the GameBoard at the start of the game. You can use this to pre-compute fixed
+     *                          information, like the locations of market or recharge tiles
      * @param startTileLocation A Point representing your starting location in (x, y) coordinates
-     *                              (0, 0) is the bottom left and (boardSize - 1, boardSize - 1) is the top right
-     * @param isRedPlayer True if this strategy is the red player, false otherwise
-     * @param random A random number generator, if your strategy needs random numbers you should use this.
+     *                          (0, 0) is the bottom left and (boardSize - 1, boardSize - 1) is the top right
+     * @param isRedPlayer       True if this strategy is the red player, false otherwise
+     * @param random            A random number generator, if your strategy needs random numbers you should use this.
      */
     @Override
     public void initialize(int boardSize, int maxInventorySize, int maxCharge, int winningScore, PlayerBoardView startingBoard, Point startTileLocation, boolean isRedPlayer, Random random) {
@@ -57,13 +60,14 @@ public class CustomStrategy implements MinePlayerStrategy {
      * Finds the most expensive resource in economy and mines it. If there is a gem on the way, pick it up.
      * If there isn't enough charge to reach the destination, move to a charger. If inventory is full,
      * move to the market and sell everything.
-     * @param boardView A PlayerBoardView object representing all the information about the board and the other player
-     *                   that your strategy is allowed to access
-     * @param economy The GameEngine's economy object which holds current prices for resources
+     *
+     * @param boardView     A PlayerBoardView object representing all the information about the board and the other player
+     *                      that your strategy is allowed to access
+     * @param economy       The GameEngine's economy object which holds current prices for resources
      * @param currentCharge The amount of charge your robot has (number of tile moves before needing to recharge)
-     * @param isRedTurn For use when two players attempt to move to the same spot on the same turn
-     *                   If true: The red player will move to the spot, and the blue player will do nothing
-     *                   If false: The blue player will move to the spot, and the red player will do nothing
+     * @param isRedTurn     For use when two players attempt to move to the same spot on the same turn
+     *                      If true: The red player will move to the spot, and the blue player will do nothing
+     *                      If false: The blue player will move to the spot, and the red player will do nothing
      * @return TurnAction to execute
      */
     @Override
@@ -124,6 +128,7 @@ public class CustomStrategy implements MinePlayerStrategy {
 
     /**
      * Adds the item received to a list.
+     *
      * @param itemReceived The item received from the player's TurnAction on their last turn
      */
     @Override
@@ -133,6 +138,7 @@ public class CustomStrategy implements MinePlayerStrategy {
 
     /**
      * Clears the inventory.
+     *
      * @param totalSellPrice The combined sell price for all items in your strategy's inventory
      */
     @Override
@@ -146,10 +152,12 @@ public class CustomStrategy implements MinePlayerStrategy {
     }
 
     @Override
-    public void endRound(int pointsScored, int opponentPointsScored) { }
+    public void endRound(int pointsScored, int opponentPointsScored) {
+    }
 
     /**
      * Finds nearest market tile based on color.
+     *
      * @return TurnAction in direction of nearest market
      */
     public TurnAction moveToNearestMarketTile() {
@@ -165,7 +173,7 @@ public class CustomStrategy implements MinePlayerStrategy {
      */
     public int getCurrentInventoryValue() {
         int value = 0;
-        for (InventoryItem item: inventory) {
+        for (InventoryItem item : inventory) {
             value += economy.getCurrentPrices().get(item.getItemType());
         }
 
@@ -177,7 +185,7 @@ public class CustomStrategy implements MinePlayerStrategy {
      */
     public boolean currentLocationHasGem() {
         if (currentBoard.getItemsOnGround().containsKey(currentLocation)) {
-            for (InventoryItem item: currentBoard.getItemsOnGround().get(currentLocation)) {
+            for (InventoryItem item : currentBoard.getItemsOnGround().get(currentLocation)) {
                 ItemType itemType = item.getItemType();
                 if (itemType.equals(ItemType.RUBY) || itemType.equals(ItemType.EMERALD) || itemType.equals(ItemType.DIAMOND)) {
                     return true;
@@ -217,9 +225,10 @@ public class CustomStrategy implements MinePlayerStrategy {
         if (nearestGem == null) {
             return null;
         }
-        for (Point point: itemsOnGround.keySet()) {
-            for (InventoryItem item: itemsOnGround.get(point)) {
-                if (typesOfGems.contains(item.getItemType()) && Utility.compareManhattanDistance(currentLocation, nearestGem, point) > 0) {
+        for (Point point : itemsOnGround.keySet()) {
+            for (InventoryItem item : itemsOnGround.get(point)) {
+                if (typesOfGems.contains(item.getItemType())
+                        && Utility.compareManhattanDistance(currentLocation, nearestGem, point) > 0) {
                     nearestGem = point;
                 }
             }
@@ -249,8 +258,8 @@ public class CustomStrategy implements MinePlayerStrategy {
      * @return The first instance of item; null if there isn't one
      */
     public Point getFirstInstanceOfItem(ItemType item) {
-        for (Point point: itemsOnGround.keySet()) {
-            for (InventoryItem inventoryItem: itemsOnGround.get(point)) {
+        for (Point point : itemsOnGround.keySet()) {
+            for (InventoryItem inventoryItem : itemsOnGround.get(point)) {
                 if (inventoryItem.getItemType().equals(item)) {
                     return point;
                 }
