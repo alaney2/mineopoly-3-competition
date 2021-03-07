@@ -29,10 +29,7 @@ public class Utility {
     public static boolean tileInBoard(Point point, int boardSize) {
         if (point.x < 0 || point.y < 0) {
             return false;
-        } else if (point.x >= boardSize || point.y >= boardSize) {
-            return false;
-        }
-        return true;
+        } else return point.x < boardSize && point.y < boardSize;
     }
 
     public static Point getNearestAutominer(Point currentLocation, Map<Point, List<InventoryItem>> itemsOnGround) {
@@ -113,27 +110,45 @@ public class Utility {
     public static boolean playerHasEnoughCharge(int currentCharge, Point currentLocation, Point destination, Point chargerLocation) {
         int distanceToNearestCharger = DistanceUtil.getManhattanDistance(currentLocation, chargerLocation);
         int distanceToDestination = DistanceUtil.getManhattanDistance(currentLocation, destination);
-        if (currentCharge <= distanceToNearestCharger + distanceToDestination) {
-            return false;
-        }
-
-        return true;
+        return currentCharge > distanceToNearestCharger + distanceToDestination;
     }
+
+//    public static TurnAction moveTowardsPoint(Point currentLocation, Point point) {
+//        if (point == null) {
+//            return null;
+//        }
+//        if (currentLocation.x < point.x) {
+//            return TurnAction.MOVE_RIGHT;
+//        } else if (currentLocation.y < point.y) {
+//            return TurnAction.MOVE_UP;
+//        } else if (currentLocation.x > point.x) {
+//            return TurnAction.MOVE_LEFT;
+//        } else if (currentLocation.y > point.y){
+//            return TurnAction.MOVE_DOWN;
+//        } else {
+//            return null;
+//        }
+//    }
 
     public static TurnAction moveTowardsPoint(Point currentLocation, Point point) {
         if (point == null) {
             return null;
         }
-        if (currentLocation.x < point.x) {
-            return TurnAction.MOVE_RIGHT;
-        } else if (currentLocation.y < point.y) {
-            return TurnAction.MOVE_UP;
-        } else if (currentLocation.x > point.x) {
-            return TurnAction.MOVE_LEFT;
-        } else if (currentLocation.y > point.y){
-            return TurnAction.MOVE_DOWN;
-        } else {
+        int xdiff = Math.abs(currentLocation.x - point.x);
+        int ydiff = Math.abs(currentLocation.y - point.y);
+        if (xdiff == 0 && ydiff == 0) {
             return null;
+        }
+        if (xdiff >= ydiff) {
+            if (currentLocation.x < point.x) {
+                return TurnAction.MOVE_RIGHT;
+            }
+            return TurnAction.MOVE_LEFT;
+        } else {
+            if (currentLocation.y < point.y) {
+                return TurnAction.MOVE_UP;
+            }
+            return TurnAction.MOVE_DOWN;
         }
     }
 

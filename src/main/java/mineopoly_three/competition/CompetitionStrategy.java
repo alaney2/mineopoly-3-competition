@@ -14,10 +14,10 @@ import java.util.*;
 import java.util.List;
 
 public class CompetitionStrategy implements MinePlayerStrategy {
-    public int boardSize;
-    public int maxInventorySize;
-    public int maxCharge;
-    public int winningScore;
+    private int boardSize;
+    private int maxInventorySize;
+    private int maxCharge;
+    private int winningScore;
     private boolean isRedPlayer;
     private int stagnantTime;
     private Point previousLocation;
@@ -25,18 +25,16 @@ public class CompetitionStrategy implements MinePlayerStrategy {
     private Point otherPlayerLocation;
     private PlayerBoardView currentBoard;
     private Economy economy;
-    private int currentScore = 0;
-    private int numTurns = 0;
+    private int currentScore;
+    private int numTurns;
 
-    private List<InventoryItem> inventory = new ArrayList<>();
-    private final Map<TileType, Integer> turnsToMineResource = new HashMap<>();
-    private final Map<ItemType, Integer> gemIncreasePerTurn = new HashMap<>();
-    private int pointsScored;
-    private int opponentPointsScored;
+    private List<InventoryItem> inventory;
+    private Map<TileType, Integer> turnsToMineResource;
+    private Map<ItemType, Integer> gemIncreasePerTurn;
     private int otherPlayerScore;
     private Map<Point, List<InventoryItem>> itemsOnGround;
-    public Set<ItemType> typesOfGems = new HashSet<>(Arrays.asList(ItemType.RUBY, ItemType.EMERALD, ItemType.DIAMOND));
-    private int autominerCount = 0;
+    private Set<ItemType> typesOfGems = new HashSet<>(Arrays.asList(ItemType.RUBY, ItemType.EMERALD, ItemType.DIAMOND));
+    private int autominerCount;
 
     public CompetitionStrategy() { }
 
@@ -48,8 +46,14 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         this.winningScore = winningScore;
         this.isRedPlayer = isRedPlayer;
         this.previousLocation = new Point();
-        this.currentLocation = new Point();
+        this.currentLocation = startTileLocation;
+        this.autominerCount = 0;
 
+        currentScore = 0;
+        numTurns = 0;
+        inventory = new ArrayList<>();
+        turnsToMineResource = new HashMap<>();
+        gemIncreasePerTurn = new HashMap<>();
         turnsToMineResource.put(TileType.RESOURCE_RUBY, 1);
         turnsToMineResource.put(TileType.RESOURCE_EMERALD, 2);
         turnsToMineResource.put(TileType.RESOURCE_DIAMOND, 3);
@@ -79,7 +83,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
             }
         }
 
-        if (getCurrentInventoryValue() + currentScore >= winningScore) {
+        if (getValueOfInventory() + currentScore >= winningScore) {
             return moveToNearestMarketTile();
         }
 
@@ -201,6 +205,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
                 value += economy.getCurrentPrices().get(ItemType.DIAMOND);
             }
         }
+
         return value;
     }
 
@@ -210,6 +215,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
                 return true;
             }
         }
+
         return false;
     }
 
@@ -224,6 +230,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
                 }
             }
         }
+
         return true;
     }
 
@@ -265,6 +272,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         if ((double) (potentialGemValue / gemTurns) > (double) (potentialResourceValue / resourceTurns)) {
             return nearestGem;
         }
+
         return nearestResource;
     }
 
@@ -418,10 +426,15 @@ public class CompetitionStrategy implements MinePlayerStrategy {
 
     public TurnAction moveToNearestMarketTile() {
         if (isRedPlayer) {
-            return Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.RED_MARKET));
+            if (!otherPlayerLocation.equals(getNearestTilePoint(currentLocation, TileType.RED_MARKET))) {
+                return Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.RED_MARKET));
+            }
+            return Utility.moveTowardsPoint(currentLocation, getFarthestTilePoint(currentLocation, TileType.RED_MARKET));
         }
-
-        return Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.BLUE_MARKET));
+        if (!otherPlayerLocation.equals(getNearestTilePoint(currentLocation, TileType.BLUE_MARKET))) {
+            return Utility.moveTowardsPoint(currentLocation, getNearestTilePoint(currentLocation, TileType.BLUE_MARKET));
+        }
+        return Utility.moveTowardsPoint(currentLocation, getFarthestTilePoint(currentLocation, TileType.BLUE_MARKET));
     }
 
     public int getCurrentInventoryValue() {
@@ -450,7 +463,6 @@ public class CompetitionStrategy implements MinePlayerStrategy {
 
     public Point getNearestTilePoint(Point currentLocation, TileType tile) {
         Point nearestTile = getFirstInstanceOfTile(tile);
-//        System.out.println(nearestTile);
         if (nearestTile == null) {
             return null;
         }
@@ -464,6 +476,23 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         }
 
         return nearestTile;
+    }
+
+    public Point getFarthestTilePoint(Point currentLocation, TileType tile) {
+        Point farthestTile = getFirstInstanceOfTile(tile);
+        if (farthestTile == null) {
+            return null;
+        }
+        for (int row = 0; row < boardSize; row++) {
+            for (int col = 0; col < boardSize; col++) {
+                if (currentBoard.getTileTypeAtLocation(col, row).equals(tile)
+                        && Utility.compareManhattanDistance(currentLocation, farthestTile, new Point(col, row)) <= 0) {
+                    farthestTile = new Point(col, row);
+                }
+            }
+        }
+
+        return farthestTile;
     }
 
     public Point getFirstInstanceOfTile(TileType tile) {
