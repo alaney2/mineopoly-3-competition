@@ -48,6 +48,7 @@ public class CompetitionStrategy implements MinePlayerStrategy {
         this.previousLocation = new Point();
         this.currentLocation = startTileLocation;
         this.autominerCount = 0;
+        this.stagnantTime = 0;
 
         currentScore = 0;
         numTurns = 0;
