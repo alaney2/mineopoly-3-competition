@@ -1,6 +1,7 @@
 package mineopoly_three;
 
-import mineopoly_three.competition.CompetitionStrategy;
+import mineopoly_three.competition.CheeseStrategy;
+import mineopoly_three.strategy.CompetitionStrategy;
 import mineopoly_three.game.GameEngine;
 import mineopoly_three.graphics.UserInterface;
 import mineopoly_three.replay.Replay;
@@ -10,9 +11,9 @@ import mineopoly_three.strategy.*;
 import javax.swing.*;
 
 public class MineopolyMain {
-    private static final int DEFAULT_BOARD_SIZE = 26;
+    private static final int DEFAULT_BOARD_SIZE = 22;
     private static final int PREFERRED_GUI_WIDTH = 750; // Bump this up or down according to your screen size
-    private static final boolean TEST_STRATEGY_WIN_PERCENT = true; // Change to true to test your win percent
+    private static final boolean TEST_STRATEGY_WIN_PERCENT = false; // Change to true to test your win percent
 
     // Use this if you want to view a past match replay
     private static final String savedReplayFilePath = null;
@@ -39,7 +40,7 @@ public class MineopolyMain {
         final GameEngine gameEngine;
         if (savedReplayFilePath == null) {
             // Not viewing a replay, play a game with a GUI instead
-            MinePlayerStrategy redStrategy = new CompetitionStrategy();
+            MinePlayerStrategy redStrategy = new CustomStrategy();
             MinePlayerStrategy blueStrategy = new CheeseStrategy();
             long randomSeed = System.currentTimeMillis();
             gameEngine = new GameEngine(DEFAULT_BOARD_SIZE, redStrategy, blueStrategy, randomSeed);
@@ -69,12 +70,12 @@ public class MineopolyMain {
     }
 
     private static double getStrategyWinPercent(MinePlayerStrategy yourStrategy, int boardSize) {
-        final int numTotalRounds = 1000;
+        final int numTotalRounds = 100;
         int numRoundsWonByMinScore = 0;
-        MinePlayerStrategy randomStrategy = new RandomStrategy();
+        MinePlayerStrategy randomStrategy = new CompetitionStrategy();
         GameEngine gameEngine = new GameEngine(boardSize, yourStrategy, randomStrategy);
 
-        for (int game = 0; game < 1000; game++) {
+        for (int game = 0; game < 100; game++) {
             gameEngine = new GameEngine(boardSize, yourStrategy, randomStrategy);
             gameEngine.runGame();
             if (gameEngine.getRedPlayerScore() >= gameEngine.getBluePlayerScore()) {

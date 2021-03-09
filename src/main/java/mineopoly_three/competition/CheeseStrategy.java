@@ -1,10 +1,11 @@
-package mineopoly_three.strategy;
+package mineopoly_three.competition;
 
 import mineopoly_three.action.TurnAction;
-import mineopoly_three.competition.Utility;
 import mineopoly_three.game.Economy;
 import mineopoly_three.item.InventoryItem;
 import mineopoly_three.item.ItemType;
+import mineopoly_three.strategy.MinePlayerStrategy;
+import mineopoly_three.strategy.PlayerBoardView;
 import mineopoly_three.tiles.TileType;
 import mineopoly_three.util.DistanceUtil;
 
@@ -34,6 +35,8 @@ public class CheeseStrategy implements MinePlayerStrategy {
     private int stagnantTime;
     private Map<Point, List<InventoryItem>> itemsOnGround;
     private Map<ItemType, Integer> gemIncreasePerTurn;
+
+    public CheeseStrategy() { }
 
     @Override
     public void initialize(int boardSize, int maxInventorySize, int maxCharge, int winningScore, PlayerBoardView startingBoard, Point startTileLocation, boolean isRedPlayer, Random random) {
@@ -94,8 +97,8 @@ public class CheeseStrategy implements MinePlayerStrategy {
                 return moveTowardsPoint(getNearestMarketTile(otherPlayerLocation, !isRedPlayer));
             }
             if (currentLocation.equals(getNearestMarketTile(otherPlayerLocation, !isRedPlayer))
-                    && DistanceUtil.getManhattanDistance(currentLocation, otherPlayerLocation) > 2
-                    && currentCharge > 10) {
+                    && DistanceUtil.getManhattanDistance(currentLocation, otherPlayerLocation) > 3
+                    && currentCharge > 15) {
                 double rand = Math.random();
                 if (rand < 0.5) {
                     return moveTowardsPoint(otherPlayerLocation);
@@ -193,7 +196,7 @@ public class CheeseStrategy implements MinePlayerStrategy {
 
     @Override
     public String getName() {
-        return "Cheese";
+        return "Diamond Hands";
     }
 
     @Override
