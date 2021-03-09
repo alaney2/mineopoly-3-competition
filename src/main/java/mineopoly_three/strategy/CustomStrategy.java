@@ -19,6 +19,7 @@ public class CustomStrategy implements MinePlayerStrategy {
     private Point currentLocation;
     private PlayerBoardView currentBoard;
     private Economy economy;
+    private Point otherPlayerLocation;
 
     private final List<InventoryItem> inventory = new ArrayList<>();
     private final Map<TileType, Integer> movesToMineResource = new HashMap<>();
@@ -75,6 +76,7 @@ public class CustomStrategy implements MinePlayerStrategy {
         this.currentBoard = boardView;
         this.economy = economy;
         this.currentLocation = boardView.getYourLocation();
+        this.otherPlayerLocation = boardView.getOtherPlayerLocation();
         this.itemsOnGround = currentBoard.getItemsOnGround();
 
         if (currentLocationHasGem() && inventory.size() < maxInventorySize) {
@@ -162,10 +164,71 @@ public class CustomStrategy implements MinePlayerStrategy {
      */
     public TurnAction moveToNearestMarketTile() {
         if (isRedPlayer) {
-            return Utility.moveTowardsPoint(currentLocation, getNearestTile(TileType.RED_MARKET));
+            if (!otherPlayerLocation.equals(getNearestTilePoint(currentLocation, TileType.RED_MARKET))) {
+                return moveTowardsPoint(getNearestTilePoint(currentLocation, TileType.RED_MARKET));
+            }
+            return moveTowardsPoint(getFarthestTilePoint(currentLocation, TileType.RED_MARKET));
+        }
+        if (!otherPlayerLocation.equals(getNearestTilePoint(currentLocation, TileType.BLUE_MARKET))) {
+            return moveTowardsPoint(getNearestTilePoint(currentLocation, TileType.BLUE_MARKET));
+        }
+        return moveTowardsPoint(getFarthestTilePoint(currentLocation, TileType.BLUE_MARKET));
+    }
+
+    public Point getFarthestTilePoint(Point currentLocation, TileType tile) {
+        Point farthestTile = getFirstInstanceOfTile(tile);
+        if (farthestTile == null) {
+            return null;
+        }
+        for (int row = 0; row < boardSize; row++) {
+            for (int col = 0; col < boardSize; col++) {
+                if (currentBoard.getTileTypeAtLocation(col, row).equals(tile)
+                        && mineopoly_three.competition.Utility.compareManhattanDistance(currentLocation, farthestTile, new Point(col, row)) <= 0) {
+                    farthestTile = new Point(col, row);
+                }
+            }
         }
 
-        return Utility.moveTowardsPoint(currentLocation, getNearestTile(TileType.BLUE_MARKET));
+        return farthestTile;
+    }
+
+    public TurnAction moveTowardsPoint(Point point) {
+        if (point == null) {
+            return null;
+        }
+        int xdiff = Math.abs(currentLocation.x - point.x);
+        int ydiff = Math.abs(currentLocation.y - point.y);
+        if (xdiff == 0 && ydiff == 0) {
+            return null;
+        }
+        if (xdiff >= ydiff) {
+            if (currentLocation.x < point.x) {
+                return TurnAction.MOVE_RIGHT;
+            }
+            return TurnAction.MOVE_LEFT;
+        } else {
+            if (currentLocation.y < point.y) {
+                return TurnAction.MOVE_UP;
+            }
+            return TurnAction.MOVE_DOWN;
+        }
+    }
+
+    public Point getNearestTilePoint(Point currentLocation, TileType tile) {
+        Point nearestTile = getFirstInstanceOfTile(tile);
+        if (nearestTile == null) {
+            return null;
+        }
+        for (int row = 0; row < boardSize; row++) {
+            for (int col = 0; col < boardSize; col++) {
+                if (currentBoard.getTileTypeAtLocation(col, row).equals(tile)
+                        && mineopoly_three.competition.Utility.compareManhattanDistance(currentLocation, nearestTile, new Point(col, row)) > 0) {
+                    nearestTile = new Point(col, row);
+                }
+            }
+        }
+
+        return nearestTile;
     }
 
     /**
